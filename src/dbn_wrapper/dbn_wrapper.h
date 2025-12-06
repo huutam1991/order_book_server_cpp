@@ -30,7 +30,6 @@ public:
     {
         m_stop = false;
 
-        int count = 0;
         const databento::Record* rec;
         std::optional<databento::UnixNanos> prev_ts;
 
@@ -44,8 +43,6 @@ public:
                 auto sleep_ns = static_cast<long long>(mbo->ts_in_delta.count() / m_speed);
                 co_await Timer::sleep_for(sleep_ns, Timer::TimerUnit::NANOSECOND);
             }
-
-            spdlog::info("Order number: {}", ++count);
 
             // invoke user callback
             cb(*mbo);
