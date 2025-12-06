@@ -26,10 +26,16 @@ public:
         inline bool empty() const { return queue.empty(); }
     };
 
-    struct DepthLevel
+    struct DepthEntry
     {
-        std::optional<std::pair<int64_t, uint64_t>> bid;
-        std::optional<std::pair<int64_t, uint64_t>> ask;
+        int64_t price;
+        uint64_t size;
+    };
+
+    struct DepthSnapshot
+    {
+        std::vector<DepthEntry> bids;   // sorted desc (best → worst)
+        std::vector<DepthEntry> asks;   // sorted asc (best → worst)
     };
 
 private:
@@ -243,39 +249,37 @@ public:
 
     // ============================================
 
-    // Return bid+ask depth at given level.
-    // level = 0 → best bid + best ask
-    DepthLevel get_depth(int level) const
+    DepthSnapshot get_depth(int levels) const
     {
-        DepthLevel out;
+        DepthSnapshot out;
+        out.bids.reserve(levels);
+        out.asks.reserve(levels);
 
-        // ----------- BID SIDE -------------
+        // -------------------- BIDS (descending) --------------------
+        int count = 0;
+        for (int idx = (int)m_num_levels - 1; idx >= 0 && count < levels; --idx)
         {
-            int count = 0;
-            for (int i = (int)m_num_levels - 1; i >= 0; --i) {
-                if (!m_bids[i].empty()) {
-                    if (count == level) {
-                        int64_t price = m_price_min + i * m_tick_size;
-                        out.bid = std::make_pair(price, m_bids[i].total_size);
-                        break;
-                    }
-                    count++;
-                }
+            if (!m_bids[idx].empty())
+            {
+                int64_t price = m_price_min + idx * m_tick_size;
+                uint64_t size = m_bids[idx].total_size;
+
+                out.bids.push_back({price, size});
+                count++;
             }
         }
 
-        // ----------- ASK SIDE -------------
+        // -------------------- ASKS (ascending) --------------------
+        count = 0;
+        for (size_t idx = 0; idx < m_num_levels && count < levels; ++idx)
         {
-            int count = 0;
-            for (size_t i = 0; i < m_num_levels; ++i) {
-                if (!m_asks[i].empty()) {
-                    if (count == level) {
-                        int64_t price = m_price_min + i * m_tick_size;
-                        out.ask = std::make_pair(price, m_asks[i].total_size);
-                        break;
-                    }
-                    count++;
-                }
+            if (!m_asks[idx].empty())
+            {
+                int64_t price = m_price_min + idx * m_tick_size;
+                uint64_t size = m_asks[idx].total_size;
+
+                out.asks.push_back({price, size});
+                count++;
             }
         }
 

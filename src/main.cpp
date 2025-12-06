@@ -40,33 +40,33 @@ int main(int argc, char **argv)
         count++;
         if (count % 1000 == 0)
         {
-            OrderBook::DepthLevel depth = ob.get_depth(10);
+            OrderBook::DepthSnapshot depth = ob.get_depth(10);
             spdlog::info("Depth at level 10:");
 
-            // Print bid side
-            if (depth.bid.has_value())
-            {
-                for (size_t i = 0; i < 10; i++)
-                {
-                    spdlog::info("  Bid - Price: {}, Size: {}", depth.bid->first, depth.bid->second);
-                }
-            }
-            else
-            {
-                spdlog::info("  Bid - None");
-            }
-
             // Print ask side
-            if (depth.ask.has_value())
+            if (depth.asks.size() > 0)
             {
-                for (size_t i = 0; i < 10; i++)
+                for (size_t i = 0; i < depth.asks.size(); i++)
                 {
-                    spdlog::info("  Ask - Price: {}, Size: {}", depth.ask->first, depth.ask->second);
+                    spdlog::info("  Ask - Price: {}, Size: {}", depth.asks[i].price, depth.asks[i].size);
                 }
             }
             else
             {
                 spdlog::info("  Ask - None");
+            }
+
+            // Print bid side
+            if (depth.bids.size() > 0)
+            {
+                for (size_t i = 0; i < depth.bids.size(); i++)
+                {
+                    spdlog::info("  Bid - Price: {}, Size: {}", depth.bids[i].price, depth.bids[i].size);
+                }
+            }
+            else
+            {
+                spdlog::info("  Bid - None");
             }
         }
     });
