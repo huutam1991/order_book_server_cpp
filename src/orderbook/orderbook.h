@@ -8,6 +8,7 @@
 
 #include <databento/dbn.hpp>
 #include <databento/dbn_file_store.hpp>
+#include <json/json.h>
 
 class OrderBook
 {
@@ -291,31 +292,42 @@ public:
     // FULL BOOK SNAPSHOT
     // ============================================
 
-    DepthSnapshot get_snapshot() const
+    Json get_snapshot() const
     {
-        DepthSnapshot snap;
+        Json snap;
 
         // ----------- BIDS (high → low) --------------
+        Json bids;
         for (int i = (int)m_num_levels - 1; i >= 0; --i)
         {
             const Level& lvl = m_bids[i];
             if (!lvl.empty())
             {
                 int64_t price = m_price_min + i * m_tick_size;
-                snap.bids.emplace_back(price, lvl.total_size);
+                bids.push_back({
+                    {"price", price},
+                    {"size" , lvl.total_size}
+                });
             }
         }
 
         // ----------- ASKS (low → high) --------------
+        Json asks;
         for (size_t i = 0; i < m_num_levels; ++i)
         {
             const Level& lvl = m_asks[i];
             if (!lvl.empty())
             {
                 int64_t price = m_price_min + i * m_tick_size;
-                snap.asks.emplace_back(price, lvl.total_size);
+                asks.push_back({
+                    {"price", price},
+                    {"size" , lvl.total_size}
+                });
             }
         }
+
+        snap["bids"] = bids;
+        snap["asks"] = asks;
 
         return snap;
     }
