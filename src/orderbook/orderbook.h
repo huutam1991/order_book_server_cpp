@@ -69,6 +69,7 @@ public:
         m_num_levels = (m_price_max - m_price_min) / m_tick_size + 1;
         m_bids.resize(m_num_levels);
         m_asks.resize(m_num_levels);
+        m_orders_ref.reserve(10000000); // preallocate for performance
     }
 
     inline size_t price_to_index(int64_t px) const
