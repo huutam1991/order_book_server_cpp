@@ -13,8 +13,7 @@ int main(int argc, char **argv)
     // Init spdlog
     LogInit::init();
 
-    spdlog::info("Databento test app started.");
-
+    // Initialize DBN Wrapper with file path
     DbnWrapper dbn_engine("z_orderbook_data/CLX5_mbo.dbn");
     dbn_engine.set_speed(0.01); // 0.01x speed
 
