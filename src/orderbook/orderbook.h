@@ -1,6 +1,5 @@
 #pragma once
 
-#include <databento/dbn.hpp>
 #include <vector>
 #include <list>
 #include <unordered_map>
@@ -10,7 +9,7 @@
 #include <databento/dbn.hpp>
 #include <databento/dbn_file_store.hpp>
 
-class OrderBookArray
+class OrderBook
 {
 public:
     struct Order
@@ -50,7 +49,7 @@ private:
 
 public:
 
-    OrderBookArray(int64_t price_min, int64_t price_max, int64_t tick)
+    OrderBook(int64_t price_min, int64_t price_max, int64_t tick)
         : m_price_min(price_min),
           m_price_max(price_max),
           m_tick_size(tick)
