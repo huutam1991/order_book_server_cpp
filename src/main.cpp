@@ -16,59 +16,41 @@ int main(int argc, char **argv)
 
     // Create OrderBook instance
     OrderBook ob(
-        60000000000LL,   // min price
-        70000000000LL,   // max price
-        10000000LL       // tick = 10e6
+        10000000000LL,    // min price
+        120000000000LL,   // max price
+        10000000LL        // tick = 10e6
     );
 
     // Initialize DBN Wrapper with file path
     DbnWrapper dbn_engine("z_orderbook_data/CLX5_mbo.dbn");
-    dbn_engine.set_speed(0.01); // 0.01x speed
-
-    int count = 0;
-
-    auto task = dbn_engine.start_stream_data([&ob, &count](const databento::MboMsg& mbo_msg)
+    dbn_engine.set_speed(1); // 0.01x speed
+    dbn_engine.set_end_callback([&ob]()
     {
-        // spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
-        //                 mbo_msg.order_id,
-        //                 mbo_msg.price,
-        //                 mbo_msg.size,
-        //                 mbo_msg.ts_in_delta.count());
+        spdlog::info("DBN stream ended. Final Order Book Snapshot:");
+
+        OrderBook::DepthSnapshot snapshot = ob.get_snapshot();
+        // Print ask, hight to low
+        for (int i = (int)snapshot.asks.size() - 1; i >= 0; --i)
+        {
+            const auto& ask = snapshot.asks[i];
+            spdlog::info("-- Ask - Price: {}, Size: {}", ask.price, ask.size);
+        }
+        // Print bid
+        for (const auto& bid : snapshot.bids)
+        {
+            spdlog::info("-- Bid - Price: {}, Size: {}", bid.price, bid.size);
+        }
+    });
+
+    auto task = dbn_engine.start_stream_data([&ob](const databento::MboMsg& mbo_msg)
+    {
+        spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
+                        mbo_msg.order_id,
+                        mbo_msg.price,
+                        mbo_msg.size,
+                        mbo_msg.ts_in_delta.count());
 
         ob.apply(mbo_msg);
-
-        count++;
-        if (count % 1000 == 0)
-        {
-            OrderBook::DepthSnapshot depth = ob.get_depth(10);
-            spdlog::info("Depth at level 10:");
-
-            // Print ask side
-            if (depth.asks.size() > 0)
-            {
-                for (size_t i = 0; i < depth.asks.size(); i++)
-                {
-                    spdlog::info("  Ask - Price: {}, Size: {}", depth.asks[i].price, depth.asks[i].size);
-                }
-            }
-            else
-            {
-                spdlog::info("  Ask - None");
-            }
-
-            // Print bid side
-            if (depth.bids.size() > 0)
-            {
-                for (size_t i = 0; i < depth.bids.size(); i++)
-                {
-                    spdlog::info("  Bid - Price: {}, Size: {}", depth.bids[i].price, depth.bids[i].size);
-                }
-            }
-            else
-            {
-                spdlog::info("  Bid - None");
-            }
-        }
     });
 
     task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));

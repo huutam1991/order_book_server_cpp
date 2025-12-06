@@ -48,7 +48,17 @@ public:
             cb(*mbo);
         }
 
+        if (m_end_callback)
+        {
+            m_end_callback();
+        }
+
         co_return;
+    }
+
+    void set_end_callback(std::function<void()> cb)
+    {
+        m_end_callback = cb;
     }
 
     void stop()
@@ -60,4 +70,5 @@ private:
     databento::DbnFileStore m_store;
     double m_speed;
     bool m_stop;
+    std::function<void()> m_end_callback = nullptr;
 };
