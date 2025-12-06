@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
     spdlog::info("Databento test app started.");
 
-    databento::DbnFileStore store{"CLX5_mbo.dbn"};
+    databento::DbnFileStore store{"z_orderbook_data/CLX5_mbo.dbn"};
     int count = 0;
 
     while (const auto* rec = store.NextRecord())
