@@ -1,0 +1,214 @@
+#pragma once
+
+#include <databento/dbn.hpp>
+#include <vector>
+#include <list>
+#include <unordered_map>
+#include <cstdint>
+#include <optional>
+
+#include <databento/dbn.hpp>
+#include <databento/dbn_file_store.hpp>
+
+class OrderBookArray
+{
+public:
+    struct Order
+    {
+        uint64_t order_id;
+        uint32_t size;
+    };
+
+    struct Level
+    {
+        std::list<Order> queue;     // FIFO queue
+        uint64_t total_size = 0;
+
+        inline bool empty() const { return queue.empty(); }
+    };
+
+private:
+    // ===== CONFIG =====
+    int64_t m_price_min;
+    int64_t m_price_max;
+    int64_t m_tick_size;
+    size_t  m_num_levels;
+
+    // ===== BOOK ARRAYS =====
+    std::vector<Level> m_bids;  // indexed as: higher price → bigger index
+    std::vector<Level> m_asks;  // indexed as: lower price  → smaller index
+
+    // ===== ORDER LOOKUP TABLE =====
+    struct Ref
+    {
+        bool is_bid;
+        size_t index;
+        std::list<Order>::iterator it;
+        int64_t price;
+    };
+    std::unordered_map<uint64_t, Ref> m_orders_ref;
+
+public:
+
+    OrderBookArray(int64_t price_min, int64_t price_max, int64_t tick)
+        : m_price_min(price_min),
+          m_price_max(price_max),
+          m_tick_size(tick)
+    {
+        m_num_levels = (m_price_max - m_price_min) / m_tick_size + 1;
+        m_bids.resize(m_num_levels);
+        m_asks.resize(m_num_levels);
+    }
+
+    inline size_t price_to_index(int64_t px) const
+    {
+        return (px - m_price_min) / m_tick_size;
+    }
+
+    inline Level& get_side(bool is_bid, size_t idx)
+    {
+        return is_bid ? m_bids[idx] : m_asks[idx];
+    }
+
+    inline const Level& get_side(bool is_bid, size_t idx) const
+    {
+        return is_bid ? m_bids[idx] : m_asks[idx];
+    }
+
+    // ============================================
+    // APPLY MBO MESSAGE
+    // ============================================
+    void apply(const databento::MboMsg& mbo)
+    {
+        char action = (char)mbo.action;
+        char side   = (char)mbo.side;
+
+        if (action == 'T' || action == 'F' || action == 'N') return;
+        if (action == 'R') { clear(); return; }
+        if (side != 'A' && side != 'B') return;
+
+        bool is_bid = (side == 'B');
+        size_t idx = price_to_index(mbo.price);
+
+        switch (action)
+        {
+            case 'A': add(mbo, is_bid, idx); break;
+            case 'C': cancel(mbo); break;
+            case 'M': modify(mbo, is_bid, idx); break;
+        }
+    }
+
+    // ============================================
+    // OPERATIONS
+    // ============================================
+
+    void add(const databento::MboMsg& mbo, bool is_bid, size_t idx)
+    {
+        Level& level = get_side(is_bid, idx);
+
+        level.queue.push_back({mbo.order_id, mbo.size});
+        auto it = std::prev(level.queue.end());
+        level.total_size += mbo.size;
+
+        m_orders_ref[mbo.order_id] = Ref{is_bid, idx, it, mbo.price};
+    }
+
+    void cancel(const databento::MboMsg& mbo)
+    {
+        auto it = m_orders_ref.find(mbo.order_id);
+        if (it == m_orders_ref.end()) return;
+
+        Ref& ref = it->second;
+        Level& level = get_side(ref.is_bid, ref.index);
+
+        uint32_t cancel_sz = mbo.size;
+        uint32_t& ord_sz = ref.it->size;
+
+        if (cancel_sz >= ord_sz)
+        {
+            level.total_size -= ord_sz;
+            level.queue.erase(ref.it);
+            m_orders_ref.erase(it);
+        }
+        else
+        {
+            ord_sz -= cancel_sz;
+            level.total_size -= cancel_sz;
+        }
+    }
+
+    void modify(const databento::MboMsg& mbo, bool new_is_bid, size_t new_idx)
+    {
+        auto it = m_orders_ref.find(mbo.order_id);
+        if (it == m_orders_ref.end())
+        {
+            add(mbo, new_is_bid, new_idx);
+            return;
+        }
+
+        Ref& ref = it->second;
+        Level& old_level = get_side(ref.is_bid, ref.index);
+        uint32_t old_size = ref.it->size;
+
+        bool price_change = (mbo.price != ref.price);
+        bool size_increase = (mbo.size > old_size);
+
+        if (price_change || size_increase)
+        {
+            old_level.total_size -= old_size;
+            old_level.queue.erase(ref.it);
+
+            Level& new_level = get_side(new_is_bid, new_idx);
+            new_level.queue.push_back({mbo.order_id, mbo.size});
+            auto new_it = std::prev(new_level.queue.end());
+            new_level.total_size += mbo.size;
+
+            ref = {new_is_bid, new_idx, new_it, mbo.price};
+        }
+        else
+        {
+            uint32_t diff = old_size - mbo.size;
+            ref.it->size = mbo.size;
+            old_level.total_size -= diff;
+        }
+    }
+
+    // ============================================
+    // BEST BID / BEST ASK
+    // ============================================
+
+    std::optional<std::pair<int64_t,uint64_t>> best_bid() const
+    {
+        for (int i = (int)m_num_levels-1; i >= 0; --i)
+        {
+            if (!m_bids[i].empty())
+            {
+                int64_t price = m_price_min + i * m_tick_size;
+                return std::make_pair(price, m_bids[i].total_size);
+            }
+        }
+        return std::nullopt;
+    }
+
+    std::optional<std::pair<int64_t,uint64_t>> best_ask() const
+    {
+        for (size_t i = 0; i < m_num_levels; ++i)
+        {
+            if (!m_asks[i].empty())
+            {
+                int64_t price = m_price_min + i * m_tick_size;
+                return std::make_pair(price, m_asks[i].total_size);
+            }
+        }
+        return std::nullopt;
+    }
+
+    // ============================================
+
+    void clear()
+    {
+        for (auto& lvl : m_bids) lvl = Level{};
+        for (auto& lvl : m_asks) lvl = Level{};
+        m_orders_ref.clear();
+    }
+};
