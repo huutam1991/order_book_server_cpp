@@ -169,6 +169,13 @@ public:
             uint32_t diff = old_size - mbo.size;
             ref.it->size = mbo.size;
             old_level.total_size -= diff;
+
+            // If size is modified to 0, remove the order
+            if (mbo.size == 0)
+            {
+                old_level.queue.erase(ref.it);
+                m_orders_ref.erase(it);
+            }
         }
     }
 
@@ -200,6 +207,13 @@ public:
             }
         }
         return std::nullopt;
+    }
+
+    // ============================================
+
+    const Level& get_level(bool is_bid, size_t idx) const
+    {
+        return is_bid ? m_bids[idx] : m_asks[idx];
     }
 
     // ============================================
