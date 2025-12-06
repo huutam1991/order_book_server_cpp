@@ -3,17 +3,12 @@
 #include <iostream>
 #include <functional>
 #include <chrono>
-#include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
 #include <memory>
 
 #include <coroutine/future.h>
 #include <coroutine/epoll_base.h>
 #include <coroutine/event_base_manager.h>
 #include <system_io/timer_io.h>
-
-using namespace boost::placeholders;
-namespace net = boost::asio;
 
 class Timer
 {
