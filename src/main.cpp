@@ -26,20 +26,8 @@ int main(int argc, char **argv)
     dbn_engine.set_speed(1); // 0.01x speed
     dbn_engine.set_end_callback([&ob]()
     {
-        spdlog::info("DBN stream ended. Final Order Book Snapshot:");
-
-        OrderBook::DepthSnapshot snapshot = ob.get_snapshot();
-        // Print ask, hight to low
-        for (int i = (int)snapshot.asks.size() - 1; i >= 0; --i)
-        {
-            const auto& ask = snapshot.asks[i];
-            spdlog::info("-- Ask - Price: {}, Size: {}", ask.price, ask.size);
-        }
-        // Print bid
-        for (const auto& bid : snapshot.bids)
-        {
-            spdlog::info("-- Bid - Price: {}, Size: {}", bid.price, bid.size);
-        }
+        Json snapshot = ob.get_snapshot();
+        spdlog::info("DBN stream ended. Final Order Book Snapshot: {}", snapshot);
     });
 
     auto task = dbn_engine.start_stream_data([&ob](const databento::MboMsg& mbo_msg)
