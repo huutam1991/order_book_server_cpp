@@ -26,6 +26,12 @@ public:
         inline bool empty() const { return queue.empty(); }
     };
 
+    struct DepthLevel
+    {
+        std::optional<std::pair<int64_t, uint64_t>> bid;
+        std::optional<std::pair<int64_t, uint64_t>> ask;
+    };
+
 private:
     // ===== CONFIG =====
     int64_t m_price_min;
@@ -233,6 +239,47 @@ public:
     const Level& get_level(bool is_bid, size_t idx) const
     {
         return is_bid ? m_bids[idx] : m_asks[idx];
+    }
+
+    // ============================================
+
+    // Return bid+ask depth at given level.
+    // level = 0 → best bid + best ask
+    DepthLevel get_depth(int level) const
+    {
+        DepthLevel out;
+
+        // ----------- BID SIDE -------------
+        {
+            int count = 0;
+            for (int i = (int)m_num_levels - 1; i >= 0; --i) {
+                if (!m_bids[i].empty()) {
+                    if (count == level) {
+                        int64_t price = m_price_min + i * m_tick_size;
+                        out.bid = std::make_pair(price, m_bids[i].total_size);
+                        break;
+                    }
+                    count++;
+                }
+            }
+        }
+
+        // ----------- ASK SIDE -------------
+        {
+            int count = 0;
+            for (size_t i = 0; i < m_num_levels; ++i) {
+                if (!m_asks[i].empty()) {
+                    if (count == level) {
+                        int64_t price = m_price_min + i * m_tick_size;
+                        out.ask = std::make_pair(price, m_asks[i].total_size);
+                        break;
+                    }
+                    count++;
+                }
+            }
+        }
+
+        return out;
     }
 
     // ============================================
