@@ -19,7 +19,7 @@ install_if_missing() {
     apt install -y "$pkg"
 }
 
-# Check & install cmake if missing
+# Check & install packages if missing
 install_if_missing build-essential
 install_if_missing git
 install_if_missing cmake
