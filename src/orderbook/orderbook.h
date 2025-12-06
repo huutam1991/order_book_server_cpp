@@ -139,44 +139,63 @@ public:
     void modify(const databento::MboMsg& mbo, bool new_is_bid, size_t new_idx)
     {
         auto it = m_orders_ref.find(mbo.order_id);
+
+        // Treat modify on missing ID as add()
         if (it == m_orders_ref.end())
         {
             add(mbo, new_is_bid, new_idx);
             return;
         }
 
-        Ref& ref = it->second;
+        Ref ref = it->second; // copy
         Level& old_level = get_side(ref.is_bid, ref.index);
         uint32_t old_size = ref.it->size;
 
-        bool price_change = (mbo.price != ref.price);
-        bool size_increase = (mbo.size > old_size);
-
-        if (price_change || size_increase)
+        // CASE 1: Size becomes zero → delete order
+        if (mbo.size == 0)
         {
             old_level.total_size -= old_size;
             old_level.queue.erase(ref.it);
-
-            Level& new_level = get_side(new_is_bid, new_idx);
-            new_level.queue.push_back({mbo.order_id, mbo.size});
-            auto new_it = std::prev(new_level.queue.end());
-            new_level.total_size += mbo.size;
-
-            ref = {new_is_bid, new_idx, new_it, mbo.price};
+            m_orders_ref.erase(it);
+            return;
         }
-        else
+
+        // CASE 2: Price changed → remove and re-add (loses all priority)
+        if (mbo.price != ref.price)
         {
-            uint32_t diff = old_size - mbo.size;
-            ref.it->size = mbo.size;
-            old_level.total_size -= diff;
+            // remove from old level
+            old_level.total_size -= old_size;
+            old_level.queue.erase(ref.it);
+            m_orders_ref.erase(it);
 
-            // If size is modified to 0, remove the order
-            if (mbo.size == 0)
-            {
-                old_level.queue.erase(ref.it);
-                m_orders_ref.erase(it);
-            }
+            // re-add into new level
+            add(mbo, new_is_bid, new_idx);
+            return;
         }
+
+        // CASE 3: Same price, size increases → lose priority
+        if (mbo.size > old_size)
+        {
+            old_level.total_size += (mbo.size - old_size);
+            ref.it->size = mbo.size;
+
+            // move to back (lose priority)
+            old_level.queue.splice(old_level.queue.end(), old_level.queue, ref.it);
+
+            // update ref info
+            it->second.price = mbo.price;
+            return;
+        }
+
+        // CASE 4: Same price, size decreases → keep priority
+        if (mbo.size < old_size)
+        {
+            old_level.total_size -= (old_size - mbo.size);
+            ref.it->size = mbo.size;
+        }
+
+        // Update stored price for future comparisons
+        it->second.price = mbo.price;
     }
 
     // ============================================
