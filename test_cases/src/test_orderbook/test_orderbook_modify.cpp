@@ -169,3 +169,127 @@ TEST(OrderBookModify, ModifyAmongMultipleFIFO)
 
     ASSERT_EQ(level.queue.back().order_id, 51);  // B moved to end
 }
+
+/*******************************************************
+ *  ADDITIONAL MODIFY SIZE TESTS (4 cases)
+ *******************************************************/
+
+/**
+ * Test M1: Modify size decrease (still > 0) — FIFO priority must remain unchanged.
+ */
+TEST(OrderBookModify, SizeDecreaseKeepFIFO)
+{
+    OrderBook ob(0, 200000, 100);
+
+    // Add initial order
+    ob.apply(make_mbo(60, 'A', 'B', 100000, 10));
+
+    // Modify: decrease size 10 → 4
+    ob.apply(make_mbo(60, 'M', 'B', 100000, 4));
+
+    auto bb = ob.best_bid();
+    ASSERT_TRUE(bb.has_value());
+    ASSERT_EQ(bb->second, 4);
+
+    size_t idx = ob.price_to_index(100000);
+    auto& lvl = ob.get_level(true, idx);
+
+    ASSERT_EQ(lvl.queue.size(), 1);
+    ASSERT_EQ(lvl.queue.front().order_id, 60);
+    ASSERT_EQ(lvl.queue.front().size, 4);
+}
+
+/**
+ * Test M2: Modify size decrease among multiple orders — FIFO must remain unchanged.
+ */
+TEST(OrderBookModify, SizeDecreaseMultipleFIFO)
+{
+    OrderBook ob(0, 200000, 100);
+
+    // Add three orders at same price
+    ob.apply(make_mbo(70, 'A', 'B', 100000, 5)); // A
+    ob.apply(make_mbo(71, 'A', 'B', 100000, 6)); // B
+    ob.apply(make_mbo(72, 'A', 'B', 100000, 7)); // C
+
+    // Decrease only B’s size → keep order in place
+    ob.apply(make_mbo(71, 'M', 'B', 100000, 2));
+
+    size_t idx = ob.price_to_index(100000);
+    auto& lvl = ob.get_level(true, idx);
+
+    ASSERT_EQ(lvl.queue.size(), 3);
+
+    auto it = lvl.queue.begin();
+    ASSERT_EQ(it->order_id, 70); // A stays first
+
+    ++it;
+    ASSERT_EQ(it->order_id, 71); // B stays second
+    ASSERT_EQ(it->size, 2);
+
+    ++it;
+    ASSERT_EQ(it->order_id, 72); // C stays third
+
+    ASSERT_EQ(lvl.total_size, 5 + 2 + 7);
+}
+
+/**
+ * Test M3: Modify size increase within multiple orders — order must lose FIFO
+ * priority and move to the end of the queue.
+ */
+TEST(OrderBookModify, SizeIncreaseMovesToEnd)
+{
+    OrderBook ob(0, 200000, 100);
+
+    // A, B, C added
+    ob.apply(make_mbo(80, 'A', 'A', 101000, 3));
+    ob.apply(make_mbo(81, 'A', 'A', 101000, 4));
+    ob.apply(make_mbo(82, 'A', 'A', 101000, 5));
+
+    // Increase size of B → loses priority → move to back
+    ob.apply(make_mbo(81, 'M', 'A', 101000, 10));
+
+    size_t idx = ob.price_to_index(101000);
+    auto& lvl = ob.get_level(false, idx);
+
+    ASSERT_EQ(lvl.queue.size(), 3);
+
+    auto it = lvl.queue.begin();
+    ASSERT_EQ(it->order_id, 80); // A stays first
+
+    ++it;
+    ASSERT_EQ(it->order_id, 82); // C moves before B
+
+    ASSERT_EQ(lvl.queue.back().order_id, 81); // B moved to end
+    ASSERT_EQ(lvl.total_size, 3 + 10 + 5);
+}
+
+/**
+ * Test M4: Modify size decreases after a previous increase — FIFO logic must follow:
+ * 1) First modify: size increase → lose priority → move to end
+ * 2) Second modify: size decrease → must NOT move back to original place
+ * This test ensures priority loss is permanent.
+ */
+TEST(OrderBookModify, IncreaseThenDecreaseKeepsLostPriority)
+{
+    OrderBook ob(0, 200000, 100);
+
+    // Add A, B, C
+    ob.apply(make_mbo(90, 'A', 'B', 100000, 3)); // A
+    ob.apply(make_mbo(91, 'A', 'B', 100000, 3)); // B
+    ob.apply(make_mbo(92, 'A', 'B', 100000, 3)); // C
+
+    // Step 1: increase B → loses priority → moved to back
+    ob.apply(make_mbo(91, 'M', 'B', 100000, 8));
+
+    size_t idx = ob.price_to_index(100000);
+    auto& lvl = ob.get_level(true, idx);
+
+    ASSERT_EQ(lvl.queue.back().order_id, 91);
+
+    // Step 2: decrease B’s size → must stay in same position (cannot gain priority)
+    ob.apply(make_mbo(91, 'M', 'B', 100000, 2));
+
+    ASSERT_EQ(lvl.queue.back().order_id, 91); // still last
+    ASSERT_EQ(lvl.queue.size(), 3);
+    ASSERT_EQ(lvl.total_size, 3 + 3 + 2);
+}
