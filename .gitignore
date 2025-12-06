@@ -1,0 +1,60 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+order_book_server_cpp
+order_book_server_cpp_debug
+/test_cases/test_cases
+
+# Build folder
+build/
+debug/
+
+# MongoDB data folder
+z_docker/mongo_docker_data
+z_docker/dump
+z_docker/build.log
+
+# Web data
+web_data/angular_src/node_modules
+web_data/angular_src/.angular
+
+# Targets log
+.vscode/targets.log
+
+# Certificate
+server-certificate.crt
+server-private-key.pem
+
+# Log files
+*.err
+
+# Front-end deploy folder
+# web_data/deploy/**

@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+  # mongodb:
+  #   image: mongo:latest
+  #   container_name: mongo_server
+  #   restart: always
+  #   networks:
+  #     - order_book_server_cpp_network
+  #   ports:
+  #    - 27017:27017
+  #   volumes:
+  #     - ./mongo_docker_data:/data/db
+
+  order_book_server_cpp:
+    build:
+      context: ../
+      dockerfile: z_docker/Dockerfile
+    # depends_on:
+    #   - mongodb
+    networks:
+      - order_book_server_cpp_network
+    ports:
+     - 80:80
+     - 443:443
+     - 8081:8081
+    environment:
+      - MONGO_URI=mongodb://47.130.115.210:27017
+      - LOG_LEVEL=debug
+      - GLOG_logbufsecs=0
+      - PROD=true
+    volumes:
+      - ./excel:/web_data/excel
+      - /home/ubuntu/manualtrader/logs:/tmp
+
+networks:
+  order_book_server_cpp_network:
+    driver: bridge
+
