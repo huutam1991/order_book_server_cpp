@@ -10,7 +10,6 @@ ADD CMakeLists.txt /order_book_server_cpp
 ADD run_bash.sh /order_book_server_cpp
 
 # Add lib to system path
-#ENV ARM64="True"
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # Build source code
