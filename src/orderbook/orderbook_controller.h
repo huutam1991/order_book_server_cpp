@@ -6,6 +6,7 @@
 
 #include <orderbook/orderbook.h>
 #include <dbn_wrapper/dbn_wrapper.h>
+#include <utils/latency_tracker.h>
 
 class OrderBookController
 {
@@ -17,6 +18,9 @@ private:
 
     // File path
     std::string m_dbn_file_path;
+
+    // Latency tracker for apply operation
+    LatencyTracker apply_stats;
 
 public:
     void initialize(const std::string& dbn_file_path);

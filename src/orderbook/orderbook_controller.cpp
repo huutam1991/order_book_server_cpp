@@ -1,5 +1,4 @@
 #include <orderbook/orderbook_controller.h>
-#include <utils/latency_tracker.h>
 
 void OrderBookController::initialize(const std::string& dbn_file_path)
 {
@@ -20,15 +19,17 @@ Task<void> OrderBookController::start_streaming(double speed)
 
     m_dbn_wrapper->set_speed(speed);
 
-    auto task = m_dbn_wrapper->start_stream_data([m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg)
+    apply_stats.clear();
+
+    auto task = m_dbn_wrapper->start_stream_data([this, m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg)
     {
-        // spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
-        //                 mbo_msg.order_id,
-        //                 mbo_msg.price,
-        //                 mbo_msg.size,
-        //                 mbo_msg.ts_in_delta.count());
+        auto start = std::chrono::high_resolution_clock::now();
 
         m_order_book->apply(mbo_msg);
+
+        auto end = std::chrono::high_resolution_clock::now();
+        double us = std::chrono::duration<double, std::micro>(end - start).count();
+        apply_stats.add_sample(us);
     });
     task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
 
