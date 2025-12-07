@@ -59,6 +59,8 @@ public:
             m_stop_future_value.set_value(true);
         }
 
+        m_is_streaming = false;
+
         spdlog::warn("Finished streaming DBN file");
 
         co_return;
