@@ -163,7 +163,7 @@ async function fetchSnapshot() {
 
         if (snapshot.latency) {
             document.getElementById("latencyBox").textContent =
-                `Latency (generate snapshot): p50=${snapshot.latency.p50.toFixed(3)}ms | ` +
+                `Latency (generate snapshot in C++): p50=${snapshot.latency.p50.toFixed(3)}ms | ` +
                 `p90=${snapshot.latency.p90.toFixed(3)}ms | ` +
                 `p99=${snapshot.latency.p99.toFixed(3)}ms`;
         }
