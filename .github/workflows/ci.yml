@@ -2,7 +2,13 @@ name: Commit CI
 
 on:
   push:
+    paths:
+      - "src/**"
+      - "core/**"
   pull_request:
+    paths:
+      - "src/**"
+      - "core/**"
 
 jobs:
   build-and-test:
