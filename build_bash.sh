@@ -9,6 +9,14 @@ check_package() {
 install_if_missing() {
     local pkg="$1"
 
+    # -----------------------------------------
+    # Skip installation when running in CI
+    # -----------------------------------------
+    if [[ "$IS_RUNNING_CI" == "1" ]]; then
+        echo "CI mode: skip installing package [$pkg]"
+        return
+    fi
+
     if check_package "$pkg"; then
         echo " * [$pkg] is already installed."
         return
