@@ -47,6 +47,10 @@
         margin-left: 20px;
         font-size: 14px;
         color: #ccc;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        line-height: 1.2;
     }
 
     .orderbook-container {
@@ -102,7 +106,10 @@
     <button class="start-btn" onclick="startStreaming()">Start Streaming</button>
     <button class="stop-btn" onclick="stopStreaming()">Stop</button>
 
-    <span id="latencyBox">Latency: --</span>
+    <span id="latencyBox">
+        <div id="lat_snap">Latency snapshot: --</div>
+        <div id="lat_apply">Latency apply MBO: --</div>
+    </span>
 </div>
 
 <div class="orderbook-container">
@@ -161,11 +168,30 @@ async function fetchSnapshot() {
         const json = await res.json();
         const snapshot = json.snapshot;
 
-        if (snapshot.latency) {
-            document.getElementById("latencyBox").textContent =
-                `Latency (generate snapshot in C++): p50=${snapshot.latency.p50.toFixed(3)}ms | ` +
-                `p90=${snapshot.latency.p90.toFixed(3)}ms | ` +
-                `p99=${snapshot.latency.p99.toFixed(3)}ms`;
+        // --- Latency of get_snapshot (millisecond) ---
+        if (snapshot.latency_get_snapshot) {
+            const l = snapshot.latency_get_snapshot;
+            document.getElementById("lat_snap").textContent =
+                `Latency snapshot (ms): p50=${l.p50.toFixed(3)} | p90=${l.p90.toFixed(3)} | p99=${l.p99.toFixed(3)}`;
+        }
+
+        // --- Latency of apply MBO message (microsecond) ---
+        if (snapshot.latency_apply_mbo_msg) {
+            const a = snapshot.latency_apply_mbo_msg;
+            const latStr =
+                `Latency apply MBO (µs): ` +
+                `p50=${a.p50.toFixed(3)} | ` +
+                `p90=${a.p90.toFixed(3)} | ` +
+                `p99=${a.p99.toFixed(3)}`;
+
+            const thrStr =
+                `Throughput (msg/s): ` +
+                `p50=${a.throughput_p50.toFixed(0)} | ` +
+                `p90=${a.throughput_p90.toFixed(0)} | ` +
+                `p99=${a.throughput_p99.toFixed(0)}`;
+
+            document.getElementById("lat_apply").innerHTML =
+                `${latStr}<br>${thrStr}`;
         }
 
         updateAsks(snapshot.asks);
