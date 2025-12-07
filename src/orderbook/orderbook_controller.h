@@ -19,8 +19,9 @@ private:
     // File path
     std::string m_dbn_file_path;
 
-    // Latency tracker for apply operation
+    // Measure apply stats
     LatencyTracker apply_stats;
+    int count_mbo_msgs = 0;
 
 public:
     void initialize(const std::string& dbn_file_path);

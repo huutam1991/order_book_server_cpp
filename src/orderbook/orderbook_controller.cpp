@@ -19,7 +19,9 @@ Task<void> OrderBookController::start_streaming(double speed)
 
     m_dbn_wrapper->set_speed(speed);
 
+    // Reset metrics
     apply_stats.clear();
+    count_mbo_msgs = 0;
 
     auto task = m_dbn_wrapper->start_stream_data([this, m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg)
     {
@@ -30,6 +32,8 @@ Task<void> OrderBookController::start_streaming(double speed)
         auto end = std::chrono::high_resolution_clock::now();
         double us = std::chrono::duration<double, std::micro>(end - start).count();
         apply_stats.add_sample(us);
+
+        count_mbo_msgs++;
     });
     task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
 
@@ -71,7 +75,10 @@ Json OrderBookController::get_orderbook_snapshot()
     snapshot["latency_apply_mbo_msg"] = {
         {"p50", apply_stats.p50()},
         {"p90", apply_stats.p90()},
-        {"p99", apply_stats.p99()}
+        {"p99", apply_stats.p99()},
+        {"throughput_p50", 1000000.0 / apply_stats.p50()},
+        {"throughput_p90", 1000000.0 / apply_stats.p90()},
+        {"throughput_p99", 1000000.0 / apply_stats.p99()}
     };
 
     return snapshot;
