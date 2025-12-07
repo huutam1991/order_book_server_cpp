@@ -8,7 +8,7 @@ openssl pkcs8 -topk8 -in private_key_in_pkcs1.pem -outform pem -nocrypt -out ser
 
 # Create a certificate signing request (CSR) using the private key
 openssl req -new -key server-private-key.pem -out request.csr \
--subj "/C=SG/ST=Singapore/L=Singapore/O=TamDev/OU=IT/CN=tam.com"
+-subj "/C=SG/ST=Singapore/L=Singapore/O=TamDev/OU=IT/CN=tam-tradingengine-test.com"
 
 # Generate [server-certificate.crt] from [request.csr] + [server-private-key.pem]
 openssl x509 -req -days 365 -in request.csr -signkey server-private-key.pem -out server-certificate.crt
