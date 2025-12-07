@@ -32,11 +32,11 @@ int main(int argc, char **argv)
 
     auto task = dbn_engine.start_stream_data([&ob](const databento::MboMsg& mbo_msg)
     {
-        spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
-                        mbo_msg.order_id,
-                        mbo_msg.price,
-                        mbo_msg.size,
-                        mbo_msg.ts_in_delta.count());
+        // spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
+        //                 mbo_msg.order_id,
+        //                 mbo_msg.price,
+        //                 mbo_msg.size,
+        //                 mbo_msg.ts_in_delta.count());
 
         ob.apply(mbo_msg);
     });
