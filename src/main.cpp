@@ -16,17 +16,32 @@ void init_api_endpoints()
 {
     ADD_ROUTE(RequestMethod::POST, "/start_streaming_orderbook")
     {
+        // Get speed from request body
         Json body_json = request->get_body_json();
         double speed = body_json.has_field("speed") ? (double)(body_json["speed"]) : 1.0;
 
+        // Stop first if it's already streaming
         co_await OrderBookController::instance().stop_streaming();
+
+        // Init with DBN file path (hardcode for now)
         OrderBookController::instance().initialize("z_orderbook_data/CLX5_mbo.dbn");
+
+        // Start streaming orderbook data
         auto task = OrderBookController::instance().start_streaming(speed);
         task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
 
         Json response;
         response["status"] = "OK";
         response["message"] = "Started streaming orderbook data, with [speed] = " + std::to_string(speed);
+
+        co_return HttpResponse(OK_200, response);
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/get_snapshot")
+    {
+        Json response;
+        response["status"] = "OK";
+        response["snapshot"] = OrderBookController::instance().get_orderbook_snapshot();
 
         co_return HttpResponse(OK_200, response);
     };
