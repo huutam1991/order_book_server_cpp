@@ -37,6 +37,17 @@ void init_api_endpoints()
         co_return HttpResponse(OK_200, response);
     };
 
+    ADD_ROUTE(RequestMethod::GET, "/stop_streaming_orderbook")
+    {
+        co_await OrderBookController::instance().stop_streaming();
+
+        Json response;
+        response["status"] = "OK";
+        response["message"] = "Stopped streaming orderbook data";
+
+        co_return HttpResponse(OK_200, response);
+    };
+
     ADD_ROUTE(RequestMethod::GET, "/get_snapshot")
     {
         Json response;
@@ -44,6 +55,11 @@ void init_api_endpoints()
         response["snapshot"] = OrderBookController::instance().get_orderbook_snapshot();
 
         co_return HttpResponse(OK_200, response);
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/")
+    {
+        co_return request->send_file_from_directory("/index.html");
     };
 }
 
