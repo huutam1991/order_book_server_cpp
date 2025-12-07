@@ -15,6 +15,9 @@ private:
     std::unique_ptr<OrderBook> m_order_book;
     std::unique_ptr<DbnWrapper> m_dbn_wrapper;
 
+    // File path
+    std::string m_dbn_file_path;
+
 public:
     void initialize(const std::string& dbn_file_path);
     void start_streaming(double speed = 1.0);

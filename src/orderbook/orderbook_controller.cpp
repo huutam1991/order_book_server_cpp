@@ -14,10 +14,14 @@ void OrderBookController::initialize(const std::string& dbn_file_path)
         10000000LL        // tick = 10e6
     );
     m_dbn_wrapper = std::make_unique<DbnWrapper>(dbn_file_path);
+
+    m_dbn_file_path = dbn_file_path;
 }
 
 void OrderBookController::start_streaming(double speed)
 {
+    spdlog::info("Start streaming DBN file: {}, with speed={}", m_dbn_file_path, speed);
+
     m_dbn_wrapper->set_speed(speed);
     m_dbn_wrapper->set_end_callback([m_order_book = m_order_book.get()]()
     {
