@@ -1,4 +1,5 @@
 #include <orderbook/orderbook_controller.h>
+#include <utils/latency_tracker.h>
 
 void OrderBookController::initialize(const std::string& dbn_file_path)
 {
@@ -45,10 +46,27 @@ Task<void> OrderBookController::stop_streaming()
 
 Json OrderBookController::get_orderbook_snapshot()
 {
+    static LatencyTracker latency;
+
+    // Start latency tracking
+    auto t0 = std::chrono::steady_clock::now();
+
     if (m_order_book == nullptr)
     {
         return Json();
     }
+    Json snapshot = m_order_book->get_snapshot();
 
-    return m_order_book->get_snapshot();
+    // End latency tracking
+    auto t1 = std::chrono::steady_clock::now();
+    double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+    latency.add_sample(ms);
+
+    snapshot["latency"] = {
+        {"p50", latency.p50()},
+        {"p90", latency.p90()},
+        {"p99", latency.p99()}
+    };
+
+    return snapshot;
 }
