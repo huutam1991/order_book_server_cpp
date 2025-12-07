@@ -22,6 +22,12 @@ private: \
     className() = default; \
     ~className() = default;
 
+#define ADD_ROUTE_GROUP(request_type, path) \
+RouteController::instance().add_route_group(request_type, path) + [](HttpRequest* request) -> Task<HttpResponse>
+
+#define ADD_ROUTE(request_type, path) \
+RouteController::instance().add_route(request_type, path) + [](HttpRequest* request) -> Task<HttpResponse>
+
 typedef unsigned char BYTE;
 
 class Utils
