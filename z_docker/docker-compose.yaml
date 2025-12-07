@@ -16,6 +16,7 @@ services:
     build:
       context: ../
       dockerfile: z_docker/Dockerfile
+    restart: always
     # depends_on:
     #   - mongodb
     networks:
