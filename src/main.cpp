@@ -19,8 +19,10 @@ void init_api_endpoints()
         Json body_json = request->get_body_json();
         double speed = body_json.has_field("speed") ? (double)(body_json["speed"]) : 1.0;
 
+        co_await OrderBookController::instance().stop_streaming();
         OrderBookController::instance().initialize("z_orderbook_data/CLX5_mbo.dbn");
-        OrderBookController::instance().start_streaming(speed);
+        auto task = OrderBookController::instance().start_streaming(speed);
+        task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
 
         Json response;
         response["status"] = "OK";

@@ -54,12 +54,14 @@ public:
             m_end_callback();
         }
 
+        spdlog::warn("Finished streaming DBN file");
+
         co_return;
     }
 
     void set_end_callback(std::function<void()> cb)
     {
-        m_end_callback = cb;
+        m_end_callback = std::move(cb);
     }
 
     bool get_is_streaming()
@@ -71,11 +73,18 @@ public:
     {
         return Future<bool>([this](Future<bool>::FutureValue future_value)
         {
-            m_is_streaming = false;
-            set_end_callback([this, future_value]() mutable
+            if (m_is_streaming == false)
             {
                 future_value.set_value(true);
+                return;
+            }
+
+            set_end_callback([this, future_value = future_value]() mutable
+            {
+                m_end_callback = nullptr;
+                future_value.set_value(true);
             });
+            m_is_streaming = false;
         });
     }
 
