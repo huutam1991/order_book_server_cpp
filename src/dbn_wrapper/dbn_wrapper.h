@@ -14,7 +14,7 @@ class DbnWrapper
 public:
     using Callback = std::function<void(const databento::MboMsg&)>;
 
-    DbnWrapper(const std::string& file_path) : m_store(file_path), m_speed(1.0), m_stop(false)
+    DbnWrapper(const std::string& file_path) : m_store(file_path), m_speed(1.0), m_is_streaming(false)
     {}
 
     // speed = 1.0  => real time
@@ -28,12 +28,12 @@ public:
 
     Task<void> start_stream_data(Callback cb)
     {
-        m_stop = false;
+        m_is_streaming = true;
 
         const databento::Record* rec;
         std::optional<databento::UnixNanos> prev_ts;
 
-        while (!m_stop && (rec = m_store.NextRecord()))
+        while (m_is_streaming && (rec = m_store.NextRecord()))
         {
             const auto* mbo = rec->GetIf<databento::MboMsg>();
             if (!mbo) continue;
@@ -63,12 +63,17 @@ public:
 
     void stop()
     {
-        m_stop = true;
+        m_is_streaming = false;
+    }
+
+    bool get_is_streaming()
+    {
+        return m_is_streaming;
     }
 
 private:
     databento::DbnFileStore m_store;
     double m_speed;
-    bool m_stop;
+    bool m_is_streaming = false;
     std::function<void()> m_end_callback = nullptr;
 };

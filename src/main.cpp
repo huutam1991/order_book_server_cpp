@@ -10,15 +10,21 @@
 #include <system_io/https_server_io/https_server_socket.h>
 #include <dbn_wrapper/dbn_wrapper.h>
 #include <coroutine/event_base_manager.h>
-#include <orderbook/orderbook.h>
+#include <orderbook/orderbook_controller.h>
 
 void init_api_endpoints()
 {
-    ADD_ROUTE(RequestMethod::GET, "/check_health")
+    ADD_ROUTE(RequestMethod::POST, "/start_streaming_orderbook")
     {
+        Json body_json = request->get_body_json();
+        double speed = body_json.has_field("speed") ? (double)(body_json["speed"]) : 1.0;
+
+        OrderBookController::instance().initialize("z_orderbook_data/CLX5_mbo.dbn");
+        OrderBookController::instance().start_streaming(speed);
+
         Json response;
-        response["message"] = "OK";
-        response["status"] = "Healthy";
+        response["status"] = "OK";
+        response["message"] = "Started streaming orderbook data, with [speed] = " + std::to_string(speed);
 
         co_return HttpResponse(OK_200, response);
     };
@@ -34,35 +40,6 @@ int main(int argc, char **argv)
 
     // Init API endpoints
     init_api_endpoints();
-
-    // Create OrderBook instance
-    OrderBook ob(
-        10000000000LL,    // min price
-        120000000000LL,   // max price
-        10000000LL        // tick = 10e6
-    );
-
-    // Initialize DBN Wrapper with file path
-    DbnWrapper dbn_engine("z_orderbook_data/CLX5_mbo.dbn");
-    dbn_engine.set_speed(1); // 0.01x speed
-    dbn_engine.set_end_callback([&ob]()
-    {
-        Json snapshot = ob.get_snapshot();
-        spdlog::info("DBN stream ended. Final Order Book Snapshot: {}", snapshot);
-    });
-
-    auto task = dbn_engine.start_stream_data([&ob](const databento::MboMsg& mbo_msg)
-    {
-        // spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
-        //                 mbo_msg.order_id,
-        //                 mbo_msg.price,
-        //                 mbo_msg.size,
-        //                 mbo_msg.ts_in_delta.count());
-
-        ob.apply(mbo_msg);
-    });
-
-    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
 
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
