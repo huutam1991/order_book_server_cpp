@@ -1,0 +1,19 @@
+name: Commit CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Run build script
+      run: bash build_bash.sh
+
+    - name: Run tests
+      run: bash test_bash.sh
