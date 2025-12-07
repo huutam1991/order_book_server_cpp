@@ -49,6 +49,8 @@ public:
             cb(*mbo);
         }
 
+        m_is_streaming = false;
+
         if (m_end_callback)
         {
             m_end_callback();
@@ -58,8 +60,6 @@ public:
         {
             m_stop_future_value.set_value(true);
         }
-
-        m_is_streaming = false;
 
         spdlog::warn("Finished streaming DBN file");
 
