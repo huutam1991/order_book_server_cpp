@@ -13,7 +13,7 @@ struct LatencyTracker
 
     inline void add_sample(double value)
     {
-        std::lock_guard<std::mutex> lock(mtx);
+        // std::lock_guard<std::mutex> lock(mtx);
         samples.push_back(value);
         if (samples.size() > max_samples)
         {
