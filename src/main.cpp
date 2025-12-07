@@ -22,6 +22,8 @@ void init_api_endpoints()
         OrderBookController::instance().initialize("z_orderbook_data/CLX5_mbo.dbn");
         OrderBookController::instance().start_streaming(speed);
 
+        spdlog::info("Started streaming orderbook data, with [speed] = {}", speed);
+
         Json response;
         response["status"] = "OK";
         response["message"] = "Started streaming orderbook data, with [speed] = " + std::to_string(speed);
