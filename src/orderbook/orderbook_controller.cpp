@@ -42,3 +42,13 @@ Task<void> OrderBookController::stop_streaming()
     }
     co_return;
 }
+
+Json OrderBookController::get_orderbook_snapshot()
+{
+    if (m_order_book == nullptr)
+    {
+        return Json();
+    }
+
+    return m_order_book->get_snapshot();
+}

@@ -22,4 +22,7 @@ public:
     void initialize(const std::string& dbn_file_path);
     Task<void> stop_streaming();
     Task<void> start_streaming(double speed = 1.0);
+
+    // Get current order book snapshot
+    Json get_orderbook_snapshot();
 };
