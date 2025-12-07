@@ -63,10 +63,15 @@ Json OrderBookController::get_orderbook_snapshot()
     double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
     latency.add_sample(ms);
 
-    snapshot["latency"] = {
+    snapshot["latency_get_snapshot"] = {
         {"p50", latency.p50()},
         {"p90", latency.p90()},
         {"p99", latency.p99()}
+    };
+    snapshot["latency_apply_mbo_msg"] = {
+        {"p50", apply_stats.p50()},
+        {"p90", apply_stats.p90()},
+        {"p99", apply_stats.p99()}
     };
 
     return snapshot;
