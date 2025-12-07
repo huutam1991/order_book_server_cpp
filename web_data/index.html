@@ -15,6 +15,9 @@
 
     .controls {
         margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
     input[type="number"] {
@@ -38,6 +41,13 @@
 
     .start-btn { background: #4caf50; }
     .stop-btn { background: #d9534f; }
+
+    /* Latency box */
+    #latencyBox {
+        margin-left: 20px;
+        font-size: 14px;
+        color: #ccc;
+    }
 
     .orderbook-container {
         display: flex;
@@ -90,12 +100,13 @@
     <input id="speedInput" type="number" step="0.1" value="0.001">
 
     <button class="start-btn" onclick="startStreaming()">Start Streaming</button>
-    <button class="stop-btn" onclick="stopStreaming()" style="margin-left:10px;">Stop</button>
+    <button class="stop-btn" onclick="stopStreaming()">Stop</button>
+
+    <span id="latencyBox">Latency: --</span>
 </div>
 
 <div class="orderbook-container">
 
-    <!-- Asks -->
     <div>
         <h2>Asks (Price ↑)</h2>
         <table id="asksTable">
@@ -103,7 +114,6 @@
         </table>
     </div>
 
-    <!-- Bids -->
     <div>
         <h2>Bids (Price ↓)</h2>
         <table id="bidsTable">
@@ -151,6 +161,13 @@ async function fetchSnapshot() {
         const json = await res.json();
         const snapshot = json.snapshot;
 
+        if (snapshot.latency) {
+            document.getElementById("latencyBox").textContent =
+                `Latency (generate snapshot): p50=${snapshot.latency.p50.toFixed(3)}ms | ` +
+                `p90=${snapshot.latency.p90.toFixed(3)}ms | ` +
+                `p99=${snapshot.latency.p99.toFixed(3)}ms`;
+        }
+
         updateAsks(snapshot.asks);
         updateBids(snapshot.bids);
 
@@ -168,7 +185,6 @@ function updateAsks(asks) {
     sorted.forEach((row, index) => {
         const tr = document.createElement("tr");
         tr.className = "asks";
-
         const key = row.price;
 
         if (index === 0) tr.classList.add("best-ask");
@@ -197,7 +213,6 @@ function updateBids(bids) {
     sorted.forEach((row, index) => {
         const tr = document.createElement("tr");
         tr.className = "bids";
-
         const key = row.price;
 
         if (index === 0) tr.classList.add("best-bid");
@@ -217,7 +232,7 @@ function updateBids(bids) {
     });
 }
 
-// Poll 250ms
+// Polling interval
 setInterval(fetchSnapshot, 100);
 
 </script>
