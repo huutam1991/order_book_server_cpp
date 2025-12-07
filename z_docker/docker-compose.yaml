@@ -1,5 +1,8 @@
 version: "3.7"
 
+# Command to stop all running containers:
+# docker kill $(docker ps -q)
+
 services:
   # mongodb:
   #   image: mongo:latest
