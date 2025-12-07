@@ -7,6 +7,7 @@
 #include <databento/dbn_file_store.hpp>
 
 #include <coroutine/task.h>
+#include <coroutine/future.h>
 #include <time/timer.h>
 
 class DbnWrapper
@@ -61,14 +62,21 @@ public:
         m_end_callback = cb;
     }
 
-    void stop()
-    {
-        m_is_streaming = false;
-    }
-
     bool get_is_streaming()
     {
         return m_is_streaming;
+    }
+
+    Future<bool> stop()
+    {
+        return Future<bool>([this](Future<bool>::FutureValue future_value)
+        {
+            m_is_streaming = false;
+            set_end_callback([this, future_value]() mutable
+            {
+                future_value.set_value(true);
+            });
+        });
     }
 
 private:
