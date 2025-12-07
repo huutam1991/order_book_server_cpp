@@ -1,126 +1,159 @@
-Order Book Server – Batonics AB Engineering Challenge
+# Order Book Server – Batonics AB Engineering Challenge
 
-This project is a fully self-implemented order book reconstruction & data streaming system, written in modern C++20 and designed following the requirements of the Batonics AB Systems/Infra Engineering Challenge.
+This project is a fully self-implemented **order book reconstruction & data streaming system**, written in modern **C++20** and designed following the requirements of the **Batonics AB Systems/Infra Engineering Challenge**.
 
-Requirement Completion Overview
-1. Data Streaming Status: PARTIAL
+---
 
-Supports ingestion of DBN MBO messages
+## Requirement Completion Overview
 
-Throughput benchmarks implemented (p50 ≈ 900k msg/s)
+### 1. Data Streaming — **Status: PARTIAL**
+- Supports ingestion of DBN MBO messages
+- Throughput benchmarks implemented (p50 ≈ **900k msg/s**)
+- Microsecond-level latency measurement for message application
+- **Does not** include real TCP streaming from an external 50k–500k msg/s feed
 
-Microsecond-level latency measurement for message application
+---
 
-Does not include real TCP streaming from an external 50k–500k msg/s feed
+### 2. Order Book Reconstruction — **Status: DONE**
+- Fully custom price-level order book engine
+- Correct handling of **ADD / MODIFY / CANCEL** operations
+- FIFO ordering preserved for same-price orders
+- Snapshot generation latency:
+  - **p50 ≈ 0.15 ms**
+  - **p90 ≈ 0.20 ms**
+  - **p99 ≈ 0.25 ms**
 
-2. Order Book Reconstruction Status: DONE
+---
 
-Fully custom price-level order book engine
+### 3. Data Storage — **Status: NOT DONE**
+- No TimescaleDB / ClickHouse / SQLite persistence implemented
+- No historical query layer
 
-Correct handling of ADD / MODIFY / CANCEL operations
+---
 
-FIFO ordering preserved for same-price orders
+### 4. Deployment (Dockerized) — **Status: DONE**
+- Fully Dockerized system with reproducible builds
+- One-command startup for server + frontend
 
-Snapshot generation latency:
+---
 
-p50 ≈ 0.15 ms
+### 5. API Layer (REST / WebSocket) — **Status: DONE (REST), NOT DONE (WebSocket)**
+- REST endpoints implemented (`/get_snapshot`)
+- WebSocket streaming endpoint not implemented
 
-p90 ≈ 0.20 ms
+---
 
-p99 ≈ 0.25 ms
+### 6. Frontend – Live Visualization — **Status: DONE**
+- Web UI visualizing real-time order book updates
+- Displays depth, price levels, snapshot latency, and MBO apply latency
+- Clean dark-themed layout for reading trading data
 
-3. Data Storage Status: NOT DONE
+---
 
-No TimescaleDB / ClickHouse / SQLite persistence implemented
+### 7. Configuration Management — **Status: PARTIAL**
+- Basic config handled via environment variables
+- No layered config system (YAML/TOML/JSON with overrides)
 
-4. Deployment (Dockerized) Status: DONE
+---
 
-Dockerfile + docker-compose provided
+### 8. Reproducible Builds / CI — **Status: DONE**
+- GitHub Actions pipeline created
+- Every commit triggers:
+  1. Dependency installation
+  2. Full build
+  3. Unit test execution
+- Build environment is fully deterministic
 
-Deployable on AWS EC2
+---
 
-Supports NGINX / Cloudflare proxy setups
+### 9. Testing — **Status: DONE**
+- 23 unit tests across ADD / MODIFY / CANCEL behavior
+- Validates FIFO ordering, size adjustments, price movements
+- Runs automatically in CI
 
-5. API Layer (REST / WebSocket) Status: DONE (REST), NOT DONE (WebSocket)
+---
 
-REST endpoints: /snapshot, /metrics
+### 10. Performance Optimization (p99 < 10ms) — **Status: PARTIAL**
+- Snapshot generation meets target (p99 ≈ **0.25 ms**)
+- MBO apply latency:
+  - p50 ≈ **0.7–1.2 µs**
+  - p90 ≈ **2–4 µs**
+  - p99 ≈ **9–14 µs**
+- Throughput:
+  - p50 ≈ **900k msg/s**
+  - p90 ≈ **450k msg/s**
+  - p99 ≈ **100k msg/s**
 
-WebSocket live feed not implemented
+Still missing: optimization under real TCP streaming load.
 
-6. Frontend – Live Visualization Status: DONE
+---
 
-Displays real-time bids/asks
+### 11. Observability — **Status: DONE**
+- Real-time measurement of:
+  - Snapshot latency
+  - MBO apply latency
+  - Throughput percentile metrics
+- Metrics displayed in frontend UI
 
-Auto-refresh loop
+---
 
-Latency + throughput percentiles shown on UI
+### 12. Infrastructure as Code — **Status: NOT DONE**
+- No Terraform / Pulumi / Ansible / Helm
+- No automated provisioning for cloud environments
 
-7. Configuration Management Status: PARTIAL
+---
 
-Supports environment variables
+### 13. Multi-Environment Setup — **Status: NOT DONE**
+- No `dev/staging/prod` separation
+- All builds run in the same environment
 
-No multi-stage configuration system
+---
 
-8. Reproducible Builds / CI Status: DONE
+### 14. Resilience Testing — **Status: NOT DONE**
+- No simulation of:
+  - Connection drops
+  - Message gaps
+  - High-latency injectors
+  - Randomized input mutation
 
-GitHub Actions pipeline
+---
 
-Automatic build + unit testing per commit
+### 15. API Reliability — **Status: PARTIAL**
+- REST API stable under moderate load
+- No retry logic, no idempotency keys, no rate limiters
+- No fault injection tests
 
-9. Testing Status: DONE
+---
 
-23+ unit tests covering:
+### 16. Security — **Status: NOT DONE**
+- No SBOM
+- No dependency scanning
+- No API authentication
 
-Add / Modify / Cancel
+---
 
-FIFO behavior
+### 17. Correctness Verification — **Status: DONE**
+- Order book engine validated through comprehensive unit tests
+- FIFO compliance, cancel edge cases, multi-level modification sequences
+- Ensures no violation of exchange semantics
 
-Complex multi-step transitions
+---
 
-All tests integrated into CI
+## Build (Linux)
 
-10. Performance Optimization Status: PARTIAL
+```
+./build_bash.sh
+```
 
-p99 snapshot latency < 1ms
+## Run (Linux)
 
-p99 apply_mbo < 10μs
+```
+./run_bash.sh
+```
 
-No SIMD / multithread optimization yet
+---
 
-11. Observability (latency, throughput) Status: DONE
+## Final Note
 
-Latency p50/p90/p99 for snapshots + MBO processing
+This implementation successfully demonstrates **order book reconstruction, real-time performance metrics, REST API exposure, CI/CD, and frontend visualization**, covering the majority of the Batonics AB engineering challenge requirements.
 
-Throughput p50/p90/p99 (msgs/s)
-
-Returned via /metrics API and displayed in UI
-
-12. Infrastructure as Code Status: NOT DONE
-
-No Terraform / Pulumi scripts
-
-13. Multi-Environment Setup Status: NOT DONE
-
-No dev/staging/prod separation
-
-14. Resilience Testing Status: NOT DONE
-
-No fault injection tests
-
-No restart / reconnection testing
-
-15. API Reliability Status: PARTIAL
-
-Error handling for REST
-
-No retry / idempotency logic
-
-16. Security Status: NOT DONE
-
-HTTPS supported via nginx
-
-No dependency scanning / SBOM
-
-17. Correctness Verification Status: DONE
-
-Correct price-time priority ensured
