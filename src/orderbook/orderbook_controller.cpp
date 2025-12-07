@@ -2,12 +2,7 @@
 
 void OrderBookController::initialize(const std::string& dbn_file_path)
 {
-    // Stop existing streaming if any
-    if (m_dbn_wrapper && m_dbn_wrapper->get_is_streaming())
-    {
-        m_dbn_wrapper->stop();
-    }
-
+    // For now hardcode order book parameters and DBN file path (but in reality should be from args)
     m_order_book = std::make_unique<OrderBook>(
         10000000000LL,    // min price
         120000000000LL,   // max price
@@ -18,34 +13,32 @@ void OrderBookController::initialize(const std::string& dbn_file_path)
     m_dbn_file_path = dbn_file_path;
 }
 
-void OrderBookController::start_streaming(double speed)
+Task<void> OrderBookController::start_streaming(double speed)
 {
     spdlog::info("Start streaming DBN file: {}, with speed={}", m_dbn_file_path, speed);
 
     m_dbn_wrapper->set_speed(speed);
-    m_dbn_wrapper->set_end_callback([m_order_book = m_order_book.get()]()
-    {
-        spdlog::info("DBN stream ended");
-    });
 
     auto task = m_dbn_wrapper->start_stream_data([m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg)
     {
-        // spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
-        //                 mbo_msg.order_id,
-        //                 mbo_msg.price,
-        //                 mbo_msg.size,
-        //                 mbo_msg.ts_in_delta.count());
+        spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
+                        mbo_msg.order_id,
+                        mbo_msg.price,
+                        mbo_msg.size,
+                        mbo_msg.ts_in_delta.count());
 
         m_order_book->apply(mbo_msg);
     });
-
     task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
+
+    co_return;
 }
 
-void OrderBookController::stop_streaming()
+Task<void> OrderBookController::stop_streaming()
 {
     if (m_dbn_wrapper && m_dbn_wrapper->get_is_streaming())
     {
-        m_dbn_wrapper->stop();
+        co_await m_dbn_wrapper->stop();
     }
+    co_return;
 }

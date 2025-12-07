@@ -20,6 +20,6 @@ private:
 
 public:
     void initialize(const std::string& dbn_file_path);
-    void start_streaming(double speed = 1.0);
-    void stop_streaming();
+    Task<void> stop_streaming();
+    Task<void> start_streaming(double speed = 1.0);
 };
