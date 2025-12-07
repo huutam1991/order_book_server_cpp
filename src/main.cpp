@@ -7,6 +7,7 @@
 #include <utils/log_init.h>
 #include <utils/utils.h>
 #include <network/https_server/route/route_controller.h>
+#include <system_io/https_server_io/https_server_socket.h>
 #include <dbn_wrapper/dbn_wrapper.h>
 #include <coroutine/event_base_manager.h>
 #include <orderbook/orderbook.h>
@@ -25,6 +26,9 @@ void init_api_endpoints()
 
 int main(int argc, char **argv)
 {
+    // Get port from args
+    const int port = atoi(argv[1]);
+
     // Init spdlog
     LogInit::init();
 
@@ -60,6 +64,10 @@ int main(int argc, char **argv)
 
     task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
 
+    // Start HTTPS server - running on EpollBase
+    EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
+    HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
+    epoll_base->start_living_system_io_object(https_server_object);
 
     // Main loop, only sleep here
     while (true)
