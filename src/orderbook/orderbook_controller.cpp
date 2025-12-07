@@ -21,11 +21,11 @@ Task<void> OrderBookController::start_streaming(double speed)
 
     auto task = m_dbn_wrapper->start_stream_data([m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg)
     {
-        spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
-                        mbo_msg.order_id,
-                        mbo_msg.price,
-                        mbo_msg.size,
-                        mbo_msg.ts_in_delta.count());
+        // spdlog::info("Received MBO message: order_id={}, price={}, size={}, delta_ns={}",
+        //                 mbo_msg.order_id,
+        //                 mbo_msg.price,
+        //                 mbo_msg.size,
+        //                 mbo_msg.ts_in_delta.count());
 
         m_order_book->apply(mbo_msg);
     });
