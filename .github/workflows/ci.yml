@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential git cmake libssl-dev libsasl2-dev libzstd-dev libspdlog-dev make g++
+        sudo apt-get install -y build-essential git cmake libssl-dev libsasl2-dev libzstd-dev libspdlog-dev libgtest-dev make g++
 
     - name: Run build script
       run: bash build_bash.sh
