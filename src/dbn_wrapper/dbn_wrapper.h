@@ -54,6 +54,11 @@ public:
             m_end_callback();
         }
 
+        if (m_stop_future_value.is_value_set() == false)
+        {
+            m_stop_future_value.set_value(true);
+        }
+
         spdlog::warn("Finished streaming DBN file");
 
         co_return;
@@ -73,17 +78,7 @@ public:
     {
         return Future<bool>([this](Future<bool>::FutureValue future_value)
         {
-            if (m_is_streaming == false)
-            {
-                future_value.set_value(true);
-                return;
-            }
-
-            set_end_callback([this, future_value = future_value]() mutable
-            {
-                m_end_callback = nullptr;
-                future_value.set_value(true);
-            });
+            m_stop_future_value = future_value;
             m_is_streaming = false;
         });
     }
@@ -93,4 +88,5 @@ private:
     double m_speed;
     bool m_is_streaming = false;
     std::function<void()> m_end_callback = nullptr;
+    Future<bool>::FutureValue m_stop_future_value;
 };
