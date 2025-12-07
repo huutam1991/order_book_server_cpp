@@ -5,14 +5,31 @@
 
 #include <spdlog/spdlog.h>
 #include <utils/log_init.h>
+#include <utils/utils.h>
+#include <network/https_server/route/route_controller.h>
 #include <dbn_wrapper/dbn_wrapper.h>
 #include <coroutine/event_base_manager.h>
 #include <orderbook/orderbook.h>
+
+void init_api_endpoints()
+{
+    ADD_ROUTE(RequestMethod::GET, "/check_health")
+    {
+        Json response;
+        response["message"] = "OK";
+        response["status"] = "Healthy";
+
+        co_return HttpResponse(OK_200, response);
+    };
+}
 
 int main(int argc, char **argv)
 {
     // Init spdlog
     LogInit::init();
+
+    // Init API endpoints
+    init_api_endpoints();
 
     // Create OrderBook instance
     OrderBook ob(
