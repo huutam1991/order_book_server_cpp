@@ -298,7 +298,7 @@ public:
     // FULL BOOK SNAPSHOT
     // ============================================
 
-    Json get_snapshot() const
+    Json build_snapshot() const
     {
         Json snap;
 
@@ -340,7 +340,7 @@ public:
 
     Task<void> get_snapshot_async(Future<Json>::FutureValue future_value)
     {
-        Json snap = get_snapshot();
+        Json snap = build_snapshot();
         future_value.set_value(std::move(snap));
 
         co_return;
