@@ -1,6 +1,10 @@
 # Order Book Server – Batonics AB Engineering Challenge
-`Web UI` is deployed at: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/).
 This project is a fully self-implemented **order book reconstruction & data streaming system**, written in modern **C++20** and designed following the requirements of the **Batonics AB Systems/Infra Engineering Challenge**.
+
+---
+
+## Web UI
+`Web UI` is deployed at: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/).
 
 ---
 
