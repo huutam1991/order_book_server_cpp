@@ -7,7 +7,7 @@ void OrderBookController::initialize(const std::string& dbn_file_path)
         20000000LL,    // min price
         120000000000LL,   // max price
         10000000LL,        // tick = 10e6
-        event_base,
+        event_base
     );
     m_dbn_wrapper = std::make_unique<DbnWrapper>(dbn_file_path);
 
