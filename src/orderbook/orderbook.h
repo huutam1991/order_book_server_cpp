@@ -103,7 +103,6 @@ public:
         char action = (char)mbo.action;
         char side   = (char)mbo.side;
 
-        if (action == 'T' || action == 'F' || action == 'N') return;
         if (action == 'R') { clear(); return; }
         if (side != 'A' && side != 'B') return;
 
@@ -112,6 +111,9 @@ public:
 
         switch (action)
         {
+            case 'T': handle_trade(mbo); break;
+            case 'F': handle_full_fill(mbo); break;
+            case 'N': handle_non_printed(mbo); break;
             case 'A': add(mbo, is_bid, idx); break;
             case 'C': cancel(mbo); break;
             case 'M': modify(mbo, is_bid, idx); break;
@@ -217,6 +219,46 @@ public:
 
         // Update stored price for future comparisons
         it->second.price = mbo.price;
+    }
+
+    void handle_trade(const databento::MboMsg& mbo)
+    {
+        spdlog::debug("Handling trade for order_id={}", mbo.order_id);
+        auto it = m_orders_ref.find(mbo.order_id);
+        if (it == m_orders_ref.end()) return;
+
+        Ref& ref = it->second;
+        Level& level = get_side(ref.is_bid, ref.index);
+
+        uint32_t& ord_sz = ref.it->size;
+
+        if (mbo.size >= ord_sz) {
+            level.total_size -= ord_sz;
+            level.queue.erase(ref.it);
+            m_orders_ref.erase(it);
+        } else {
+            ord_sz -= mbo.size;
+            level.total_size -= mbo.size;
+        }
+    }
+
+    void handle_full_fill(const databento::MboMsg& mbo)
+    {
+        spdlog::debug("Handling full fill for order_id={}", mbo.order_id);
+        auto it = m_orders_ref.find(mbo.order_id);
+        if (it == m_orders_ref.end()) return;
+
+        Ref& ref = it->second;
+        Level& level = get_side(ref.is_bid, ref.index);
+
+        level.total_size -= ref.it->size;
+        level.queue.erase(ref.it);
+        m_orders_ref.erase(it);
+    }
+
+    void handle_non_printed(const databento::MboMsg& mbo)
+    {
+        handle_trade(mbo); // same logic as T
     }
 
     // ============================================
