@@ -30,7 +30,7 @@ services:
      - 8081:8081
     environment:
       - MONGO_URI=mongodb://47.130.115.210:27017
-      - LOG_LEVEL=err
+      - LOG_LEVEL=info
       - GLOG_logbufsecs=0
       - PROD=true
     volumes:
