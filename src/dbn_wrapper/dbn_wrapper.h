@@ -29,12 +29,12 @@ public:
 
     Task<void> start_stream_data(Callback cb)
     {
-        m_is_streaming = true;
+        m_is_streaming.store(true);
 
         const databento::Record* rec;
         std::optional<databento::UnixNanos> prev_ts;
 
-        while (m_is_streaming && (rec = m_store.NextRecord()))
+        while (m_is_streaming.load() && (rec = m_store.NextRecord()))
         {
             const auto* mbo = rec->GetIf<databento::MboMsg>();
             if (!mbo) continue;
@@ -49,7 +49,7 @@ public:
             cb(*mbo);
         }
 
-        m_is_streaming = false;
+        m_is_streaming.store(false);
 
         if (m_end_callback)
         {
@@ -81,14 +81,14 @@ public:
         return Future<bool>([this](Future<bool>::FutureValue future_value)
         {
             m_stop_future_value = future_value;
-            m_is_streaming = false;
+            m_is_streaming.store(false);
         });
     }
 
 private:
     databento::DbnFileStore m_store;
     double m_speed;
-    bool m_is_streaming = false;
+    std::atomic<bool> m_is_streaming = false;
     std::function<void()> m_end_callback = nullptr;
     Future<bool>::FutureValue m_stop_future_value;
 };
