@@ -21,9 +21,7 @@ void init_api_endpoints()
 
     ADD_ROUTE(RequestMethod::GET, "/get_snapshot")
     {
-        static EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
-        auto task = OrderBookController::instance().get_orderbook_snapshot();
-        Json snapshot = task.start_running_on(event_base).get();
+        Json snapshot = co_await OrderBookController::instance().get_orderbook_snapshot();
 
         Json response;
         response["status"] = "OK";
