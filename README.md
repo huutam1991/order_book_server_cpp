@@ -7,7 +7,7 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ## Requirement Completion Overview
 
 ### 1. Data Streaming — **Status: PARTIAL**
-- Supports ingestion of DBN MBO messages: class ([`dbn_wrapper.h/`](src/dbn_wrapper/dbn_wrapper.h))
+- Supports ingestion of DBN MBO messages: class ([`dbn_wrapper.h`](src/dbn_wrapper/dbn_wrapper.h))
 - Throughput benchmarks implemented (p50 ≈ **900k msg/s**)
 - Microsecond-level latency measurement for message application
 - **Does not** include real TCP streaming from an external 50k–500k msg/s feed
@@ -15,13 +15,13 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ---
 
 ### 2. Order Book Reconstruction — **Status: DONE**
-- Fully custom price-level order book engine
+- Fully custom price-level order book engine: class ([`orderbook.h`](src/orderbook/orderbook.h))
 - Correct handling of **ADD / MODIFY / CANCEL** operations
 - FIFO ordering preserved for same-price orders
 - Snapshot generation latency:
-  - **p50 ≈ 0.15 ms**
-  - **p90 ≈ 0.20 ms**
-  - **p99 ≈ 0.25 ms**
+  - **p50 ≈ 0.21 ms**
+  - **p90 ≈ 0.59 ms**
+  - **p99 ≈ 0.65 ms**
 
 ---
 
@@ -32,32 +32,32 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ---
 
 ### 4. Deployment (Dockerized) — **Status: DONE**
-- Fully Dockerized system with reproducible builds
+- Fully Dockerized system with reproducible builds: ([`Dockerfile`](z_docker/Dockerfile)) + ([`Dockerfile`](z_docker/docker-compose.yaml))
 - One-command startup for server + frontend
 
 ---
 
 ### 5. API Layer (REST / WebSocket) — **Status: DONE (REST), NOT DONE (WebSocket)**
-- REST endpoints implemented (`/get_snapshot`)
-- WebSocket streaming endpoint not implemented
+- REST endpoints implemented (`/get_snapshot`, `/start_streaming_orderbook`, `/start_streaming_orderbook`)
+- Implement endpoints here: ([`main.cpp`](src/main.cpp))
 
 ---
 
 ### 6. Frontend – Live Visualization — **Status: DONE**
-- Web UI visualizing real-time order book updates
+- Web UI visualizing real-time order book updates: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/)
 - Displays depth, price levels, snapshot latency, and MBO apply latency
 - Clean dark-themed layout for reading trading data
 
 ---
 
 ### 7. Configuration Management — **Status: PARTIAL**
-- Basic config handled via environment variables
+- Basic config handled via environment variables: `LOG_LEVEL` + `PROD` ([`Dockerfile`](z_docker/docker-compose.yaml))
 - No layered config system (YAML/TOML/JSON with overrides)
 
 ---
 
 ### 8. Reproducible Builds / CI — **Status: DONE**
-- GitHub Actions pipeline created
+- GitHub Actions pipeline created (for an example: [CI for commit #19](https://github.com/huutam1991/order_book_server_cpp/actions/runs/20021925172/job/57410491458))
 - Every commit triggers:
   1. Dependency installation
   2. Full build
@@ -67,24 +67,22 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ---
 
 ### 9. Testing — **Status: DONE**
-- 23 unit tests across ADD / MODIFY / CANCEL behavior
+- 23 unit tests across ADD / MODIFY / CANCEL behavior: ([`test_orderbook/`](test_cases/src/test_orderbook))
 - Validates FIFO ordering, size adjustments, price movements
 - Runs automatically in CI
 
 ---
 
 ### 10. Performance Optimization (p99 < 10ms) — **Status: PARTIAL**
-- Snapshot generation meets target (p99 ≈ **0.25 ms**)
+- Snapshot generation meets target (p99 ≈ **0.65 ms**)
 - MBO apply latency:
-  - p50 ≈ **0.7–1.2 µs**
-  - p90 ≈ **2–4 µs**
-  - p99 ≈ **9–14 µs**
+  - p50 ≈ **1.1–1.2 µs**
+  - p90 ≈ **2.4–2.6 µs**
+  - p99 ≈ **3.5–4.3 µs**
 - Throughput:
   - p50 ≈ **900k msg/s**
   - p90 ≈ **450k msg/s**
-  - p99 ≈ **100k msg/s**
-
-Still missing: optimization under real TCP streaming load.
+  - p99 ≈ **250k msg/s**
 
 ---
 
