@@ -32,13 +32,13 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ---
 
 ### 4. Deployment (Dockerized) — **Status: DONE**
-- Fully Dockerized system with reproducible builds: ([`Dockerfile`](z_docker/Dockerfile)) + ([`Dockerfile`](z_docker/docker-compose.yaml))
+- Fully Dockerized system with reproducible builds: ([`Dockerfile`](z_docker/Dockerfile)) + ([`docker-compose.yaml`](z_docker/docker-compose.yaml))
 - One-command startup for server + frontend
 
 ---
 
 ### 5. API Layer (REST / WebSocket) — **Status: DONE (REST), NOT DONE (WebSocket)**
-- REST endpoints implemented (`/get_snapshot`, `/start_streaming_orderbook`, `/start_streaming_orderbook`)
+- REST endpoints implemented ([/get_snapshot](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L22-L32), [/start_streaming_orderbook](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L34-L55), [/stop_streaming_orderbook](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L57-L66))
 - Implement endpoints here: ([`main.cpp`](src/main.cpp))
 
 ---
@@ -51,7 +51,7 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ---
 
 ### 7. Configuration Management — **Status: PARTIAL**
-- Basic config handled via environment variables: `LOG_LEVEL` + `PROD` ([`Dockerfile`](z_docker/docker-compose.yaml))
+- Basic config handled via environment variables: `LOG_LEVEL` + `PROD` ([`docker-compose.yaml`](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/z_docker/docker-compose.yaml#L31-L35))
 - No layered config system (YAML/TOML/JSON with overrides)
 
 ---
@@ -67,13 +67,13 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ---
 
 ### 9. Testing — **Status: DONE**
-- 23 unit tests across ADD / MODIFY / CANCEL behavior: ([`test_orderbook/`](test_cases/src/test_orderbook))
+- 23 unit tests (Google Test) across ADD / MODIFY / CANCEL behavior: ([`test_orderbook/`](test_cases/src/test_orderbook))
 - Validates FIFO ordering, size adjustments, price movements
 - Runs automatically in CI
 
 ---
 
-### 10. Performance Optimization (p99 < 10ms) — **Status: PARTIAL**
+### 10. Performance Optimization (p99 < 10ms) — **Status: DONE**
 - Snapshot generation meets target (p99 ≈ **0.65 ms**)
 - MBO apply latency:
   - p50 ≈ **1.1–1.2 µs**
