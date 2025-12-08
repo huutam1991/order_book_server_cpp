@@ -60,7 +60,7 @@ Task<Json> OrderBookController::get_orderbook_snapshot()
     {
         co_return Json();
     }
-    Json snapshot = m_order_book->get_snapshot();
+    Json snapshot = co_await m_order_book->get_snapshot();
 
     // End latency tracking
     auto t1 = std::chrono::steady_clock::now();
