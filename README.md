@@ -1,5 +1,5 @@
 # Order Book Server – Batonics AB Engineering Challenge
-`Web UI` is deployed at: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/)
+`Web UI` is deployed at: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/).
 This project is a fully self-implemented **order book reconstruction & data streaming system**, written in modern **C++20** and designed following the requirements of the **Batonics AB Systems/Infra Engineering Challenge**.
 
 ---
@@ -37,11 +37,12 @@ This project is a fully self-implemented **order book reconstruction & data stre
 
 ---
 
-### 5. API Layer (REST / WebSocket) — **Status: DONE (REST), NOT DONE (WebSocket)**
+### 5. API Layer (REST / WebSocket) — **Status: DONE (REST)**
 - REST endpoints implemented:
   1. Get snapshot: [/get_snapshot](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L22-L32)
   2. Start streaming orderbook: [/start_streaming_orderbook](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L34-L55),
   3. Stop streaming orderbook: [/stop_streaming_orderbook](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L57-L66)
+- Support 10 - 100 concurrent clients reading the order book
 
 ---
 
