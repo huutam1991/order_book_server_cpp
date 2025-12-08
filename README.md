@@ -88,6 +88,8 @@ This project is a fully self-implemented **order book reconstruction & data stre
   - p50 ≈ **900k msg/s**
   - p90 ≈ **450k msg/s**
   - p99 ≈ **250k msg/s**
+ <img width="837" height="117" alt="image" src="https://github.com/user-attachments/assets/c1a75cbf-bf32-4d16-ac0a-bc11c6d1fd35" />
+
 
 ---
 
