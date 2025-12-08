@@ -54,6 +54,7 @@ This project is a fully self-implemented **order book reconstruction & data stre
 
 ### 6. Frontend – Live Visualization — **Status: DONE**
 - Web UI visualizing real-time order book updates: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/)
+- Source file: ([`index.html`](web_data/index.html))
 - Displays depth, price levels, snapshot latency, and MBO apply latency
 - Clean dark-themed layout for reading trading data
 
