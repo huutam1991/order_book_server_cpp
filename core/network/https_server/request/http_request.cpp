@@ -312,7 +312,7 @@ void HttpRequest::add_custom_bad_request_getter(std::function<HttpResponse(HttpR
 HttpRequest* HttpRequest::CreateNewHttpRequest(const std::string& content, const std::string& dir_path)
 {
     // // Get String method of request
-    // spdlog::debug("Content = {}", content);
+    spdlog::debug("Content = {}", content);
 
     size_t end_of_method_pos = content.find_first_of(' ', 0);
     if (end_of_method_pos == std::string::npos) {
