@@ -1,6 +1,10 @@
 # Order Book Server – Batonics AB Engineering Challenge
-`Web UI` is deployed at: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/).
 This project is a fully self-implemented **order book reconstruction & data streaming system**, written in modern **C++20** and designed following the requirements of the **Batonics AB Systems/Infra Engineering Challenge**.
+
+---
+
+## Web UI
+`Web UI` is deployed at: [https://tam-tradingengine-test.com](https://tam-tradingengine-test.com/).
 
 ---
 
@@ -42,9 +46,7 @@ This project is a fully self-implemented **order book reconstruction & data stre
   1. Get snapshot: [/get_snapshot](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L22-L32)
   2. Start streaming orderbook: [/start_streaming_orderbook](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L34-L55),
   3. Stop streaming orderbook: [/stop_streaming_orderbook](https://github.com/huutam1991/order_book_server_cpp/blob/8270ee18e18810e403862e20cc5984e7946b16e8/src/main.cpp#L57-L66)
-- Support `10 - 100 concurrent clients` reading the order book
-- <img width="1303" height="774" alt="image" src="https://github.com/user-attachments/assets/c63cc7b2-6cb9-442d-af69-6a8ca8d60d84" />
-
+- Support 10 - 100 concurrent clients reading the order book
 
 ---
 
@@ -88,8 +90,6 @@ This project is a fully self-implemented **order book reconstruction & data stre
   - p50 ≈ **900k msg/s**
   - p90 ≈ **450k msg/s**
   - p99 ≈ **250k msg/s**
- <img width="837" height="117" alt="image" src="https://github.com/user-attachments/assets/c1a75cbf-bf32-4d16-ac0a-bc11c6d1fd35" />
-
 
 ---
 
