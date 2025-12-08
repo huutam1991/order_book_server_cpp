@@ -8,7 +8,11 @@
 
 #include <databento/dbn.hpp>
 #include <databento/dbn_file_store.hpp>
+
 #include <json/json.h>
+#include <coroutine/event_base_manager.h>
+#include <coroutine/task.h>
+#include <coroutine/future.h>
 
 class OrderBook
 {
@@ -59,6 +63,8 @@ private:
         int64_t price;
     };
     std::unordered_map<uint64_t, Ref> m_orders_ref;
+
+    EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
 
 public:
 
@@ -330,6 +336,23 @@ public:
         snap["asks"] = asks;
 
         return snap;
+    }
+
+    Task<void> get_snapshot_async(Future<Json>::FutureValue future_value)
+    {
+        Json snap = get_snapshot();
+        future_value.set_value(std::move(snap));
+
+        co_return;
+    }
+
+    Future<Json> get_snapshot()
+    {
+        return Future<Json>([this](Future<Json>::FutureValue future_value)
+        {
+            auto task = this->get_snapshot_async(future_value);
+            task.start_running_on(event_base);
+        });
     }
 
     // ============================================
