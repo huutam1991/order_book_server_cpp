@@ -7,7 +7,8 @@ ADD src /order_book_server_cpp/src
 ADD web_data /order_book_server_cpp/web_data
 ADD z_orderbook_data /order_book_server_cpp/z_orderbook_data
 ADD CMakeLists.txt /order_book_server_cpp
-ADD generate_server_certificate.sh /order_book_server_cpp
+ADD server-certificate.crt /order_book_server_cpp
+ADD server-private-key.pem /order_book_server_cpp
 ADD build_bash.sh /order_book_server_cpp
 ADD run_bash.sh /order_book_server_cpp
 
