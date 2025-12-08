@@ -25,7 +25,7 @@ static MboMsg make_mbo(uint64_t order_id, char action, char side, int64_t px, ui
  */
 TEST(OrderBookModify, SizeDecreaseKeepsPriority)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(10, 'A', 'B', 100000, 10));
 
@@ -43,7 +43,7 @@ TEST(OrderBookModify, SizeDecreaseKeepsPriority)
  */
 TEST(OrderBookModify, SizeIncreaseLosesPriority)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(10, 'A', 'B', 100000, 5));
     ob.apply(make_mbo(11, 'A', 'B', 100000, 7));
@@ -62,7 +62,7 @@ TEST(OrderBookModify, SizeIncreaseLosesPriority)
  */
 TEST(OrderBookModify, PriceIncreaseMovesOrder)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(20, 'A', 'B', 100000, 5));
 
@@ -79,7 +79,7 @@ TEST(OrderBookModify, PriceIncreaseMovesOrder)
  */
 TEST(OrderBookModify, PriceDecreaseMovesOrder)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(21, 'A', 'B', 102000, 5));
 
@@ -96,7 +96,7 @@ TEST(OrderBookModify, PriceDecreaseMovesOrder)
  */
 TEST(OrderBookModify, ModifyOnMissingOrderBecomesAdd)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // Modify an order that doesn't exist
     ob.apply(make_mbo(30, 'M', 'A', 101000, 4));
@@ -112,7 +112,7 @@ TEST(OrderBookModify, ModifyOnMissingOrderBecomesAdd)
  */
 TEST(OrderBookModify, ModifySizeToZeroErasesOrder)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(31, 'A', 'B', 100000, 5));
 
@@ -127,7 +127,7 @@ TEST(OrderBookModify, ModifySizeToZeroErasesOrder)
  */
 TEST(OrderBookModify, ComplexModifySequence)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(40, 'A', 'B', 100000, 5));
 
@@ -149,7 +149,7 @@ TEST(OrderBookModify, ComplexModifySequence)
  */
 TEST(OrderBookModify, ModifyAmongMultipleFIFO)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(50, 'A', 'A', 101000, 3)); // A
     ob.apply(make_mbo(51, 'A', 'A', 101000, 4)); // B
@@ -179,7 +179,7 @@ TEST(OrderBookModify, ModifyAmongMultipleFIFO)
  */
 TEST(OrderBookModify, SizeDecreaseKeepFIFO)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // Add initial order
     ob.apply(make_mbo(60, 'A', 'B', 100000, 10));
@@ -204,7 +204,7 @@ TEST(OrderBookModify, SizeDecreaseKeepFIFO)
  */
 TEST(OrderBookModify, SizeDecreaseMultipleFIFO)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // Add three orders at same price
     ob.apply(make_mbo(70, 'A', 'B', 100000, 5)); // A
@@ -238,7 +238,7 @@ TEST(OrderBookModify, SizeDecreaseMultipleFIFO)
  */
 TEST(OrderBookModify, SizeIncreaseMovesToEnd)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // A, B, C added
     ob.apply(make_mbo(80, 'A', 'A', 101000, 3));
@@ -271,7 +271,7 @@ TEST(OrderBookModify, SizeIncreaseMovesToEnd)
  */
 TEST(OrderBookModify, IncreaseThenDecreaseKeepsLostPriority)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // Add A, B, C
     ob.apply(make_mbo(90, 'A', 'B', 100000, 3)); // A

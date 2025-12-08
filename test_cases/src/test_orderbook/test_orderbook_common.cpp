@@ -21,7 +21,7 @@ static MboMsg make_mbo(uint64_t order_id, char action, char side, int64_t px, ui
  ***********************************************/
 TEST(OrderBookBasic, ResetClearsBook)
 {
-    OrderBook ob(0, 200000, 100);  // tick=100
+    OrderBook ob(0, 200000, 100, nullptr);  // tick=100
 
     // Add 2 orders before reset
     ob.apply(make_mbo(1, 'A', 'B', 100000, 5));
@@ -44,7 +44,7 @@ TEST(OrderBookBasic, ResetClearsBook)
  ***********************************************/
 TEST(OrderBookBasic, FillDoesNotChangeBook)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // Add order
     ob.apply(make_mbo(10, 'A', 'B', 100000, 5));
@@ -67,7 +67,7 @@ TEST(OrderBookBasic, FillDoesNotChangeBook)
  ***********************************************/
 TEST(OrderBookBasic, TradeDoesNotChangeBook)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(11, 'A', 'A', 101000, 7));
     auto before = ob.best_ask();

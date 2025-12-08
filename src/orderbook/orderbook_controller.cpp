@@ -6,7 +6,8 @@ void OrderBookController::initialize(const std::string& dbn_file_path)
     m_order_book = std::make_unique<OrderBook>(
         20000000LL,    // min price
         120000000000LL,   // max price
-        10000000LL        // tick = 10e6
+        10000000LL,        // tick = 10e6
+        event_base,
     );
     m_dbn_wrapper = std::make_unique<DbnWrapper>(dbn_file_path);
 
@@ -35,7 +36,7 @@ Task<void> OrderBookController::start_streaming(double speed)
 
         count_mbo_msgs++;
     });
-    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
+    task.start_running_on(event_base);
 
     co_return;
 }

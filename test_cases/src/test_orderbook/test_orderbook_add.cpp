@@ -22,7 +22,7 @@ static MboMsg make_mbo(uint64_t order_id, char action, char side, int64_t px, ui
  ***********************************************/
 TEST(OrderBookAdd, AddFirstBid)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(1, 'A', 'B', 100000, 5));  // price = 1000.00
 
@@ -38,7 +38,7 @@ TEST(OrderBookAdd, AddFirstBid)
  ***********************************************/
 TEST(OrderBookAdd, AddFirstAsk)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(2, 'A', 'A', 101000, 3));
 
@@ -55,7 +55,7 @@ TEST(OrderBookAdd, AddFirstAsk)
  ***********************************************/
 TEST(OrderBookAdd, AddMultipleSamePriceFIFO)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(10, 'A', 'B', 100000, 5));
     ob.apply(make_mbo(11, 'A', 'B', 100000, 7));
@@ -79,7 +79,7 @@ TEST(OrderBookAdd, AddMultipleSamePriceFIFO)
  ***********************************************/
 TEST(OrderBookAdd, AddDifferentPrices)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     // Lower bid
     ob.apply(make_mbo(20, 'A', 'B', 99000, 4));

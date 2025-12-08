@@ -7,6 +7,7 @@
 #include <orderbook/orderbook.h>
 #include <dbn_wrapper/dbn_wrapper.h>
 #include <utils/latency_tracker.h>
+#include <coroutine/event_base_manager.h>
 
 class OrderBookController
 {
@@ -15,6 +16,8 @@ class OrderBookController
 private:
     std::unique_ptr<OrderBook> m_order_book;
     std::unique_ptr<DbnWrapper> m_dbn_wrapper;
+
+    EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
 
     // File path
     std::string m_dbn_file_path;

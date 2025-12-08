@@ -64,14 +64,15 @@ private:
     };
     std::unordered_map<uint64_t, Ref> m_orders_ref;
 
-    EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
+    EventBase* event_base = nullptr;
 
 public:
 
-    OrderBook(int64_t price_min, int64_t price_max, int64_t tick)
+    OrderBook(int64_t price_min, int64_t price_max, int64_t tick, EventBase* event_base)
         : m_price_min(price_min),
           m_price_max(price_max),
-          m_tick_size(tick)
+          m_tick_size(tick),
+          event_base(event_base)
     {
         m_num_levels = (m_price_max - m_price_min) / m_tick_size + 1;
         m_bids.resize(m_num_levels);

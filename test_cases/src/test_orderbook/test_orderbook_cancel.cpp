@@ -22,7 +22,7 @@ static MboMsg make_mbo(uint64_t order_id, char action, char side, int64_t px, ui
  */
 TEST(OrderBookCancel, PartialCancel)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(1, 'A', 'B', 100000, 10));
 
@@ -41,7 +41,7 @@ TEST(OrderBookCancel, PartialCancel)
  */
 TEST(OrderBookCancel, FullCancelRemovesOrder)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(2, 'A', 'A', 101000, 5));
 
@@ -57,7 +57,7 @@ TEST(OrderBookCancel, FullCancelRemovesOrder)
  */
 TEST(OrderBookCancel, CancelAmongMultipleOrdersSamePrice)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(3, 'A', 'B', 100000, 5));
     ob.apply(make_mbo(4, 'A', 'B', 100000, 7));
@@ -75,7 +75,7 @@ TEST(OrderBookCancel, CancelAmongMultipleOrdersSamePrice)
  */
 TEST(OrderBookCancel, CancelNonBestDoesNotChangeTop)
 {
-    OrderBook ob(0, 200000, 100);
+    OrderBook ob(0, 200000, 100, nullptr);
 
     ob.apply(make_mbo(5, 'A', 'B', 101000, 4)); // best bid
     ob.apply(make_mbo(6, 'A', 'B', 100000, 8)); // lower bid
