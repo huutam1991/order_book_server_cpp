@@ -13,7 +13,7 @@ struct LatencyTracker
 
     inline void add_sample(double value)
     {
-        // std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);
         samples.push_back(value);
         if (samples.size() > max_samples)
         {
@@ -24,7 +24,7 @@ struct LatencyTracker
     // Get percentile (50, 90, 99)
     inline double percentile(double p)
     {
-        // std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);
         if (samples.empty())
         {
             return 0.0;
@@ -42,7 +42,7 @@ struct LatencyTracker
 
     inline void clear()
     {
-        // std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);
         samples.clear();
     }
 };
