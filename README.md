@@ -7,7 +7,7 @@ This project is a fully self-implemented **order book reconstruction & data stre
 ## Requirement Completion Overview
 
 ### 1. Data Streaming — **Status: PARTIAL**
-- Supports ingestion of DBN MBO messages
+- Supports ingestion of DBN MBO messages: class ([`dbn_wrapper.h/`](src/dbn_wrapper/dbn_wrapper.h))
 - Throughput benchmarks implemented (p50 ≈ **900k msg/s**)
 - Microsecond-level latency measurement for message application
 - **Does not** include real TCP streaming from an external 50k–500k msg/s feed
