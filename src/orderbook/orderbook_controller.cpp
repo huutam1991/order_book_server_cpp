@@ -4,7 +4,7 @@ void OrderBookController::initialize(const std::string& dbn_file_path)
 {
     // For now hardcode order book parameters and DBN file path (but in reality should be from args)
     m_order_book = std::make_unique<OrderBook>(
-        10000000000LL,    // min price
+        20000000LL,    // min price
         120000000000LL,   // max price
         10000000LL        // tick = 10e6
     );
