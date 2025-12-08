@@ -141,7 +141,7 @@ void HttpClientSocket::release()
 
 Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
 {
-    std::string response = request->response_not_found_404().get_response_in_string();
+    std::string response = request->response_internal_error_500().get_response_in_string();
     write_to_socket_io(response.c_str(), response.size());
 
     // Clean save buffer
