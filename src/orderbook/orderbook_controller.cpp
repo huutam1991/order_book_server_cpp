@@ -49,7 +49,7 @@ Task<void> OrderBookController::stop_streaming()
     co_return;
 }
 
-Json OrderBookController::get_orderbook_snapshot()
+Task<Json> OrderBookController::get_orderbook_snapshot()
 {
     static LatencyTracker latency;
 
@@ -58,7 +58,7 @@ Json OrderBookController::get_orderbook_snapshot()
 
     if (m_order_book == nullptr)
     {
-        return Json();
+        co_return Json();
     }
     Json snapshot = m_order_book->get_snapshot();
 
@@ -81,5 +81,5 @@ Json OrderBookController::get_orderbook_snapshot()
         {"throughput_p99", 1000000.0 / apply_stats.p99()}
     };
 
-    return snapshot;
+    co_return snapshot;
 }

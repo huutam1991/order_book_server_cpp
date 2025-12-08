@@ -29,5 +29,5 @@ public:
     Task<void> start_streaming(double speed = 1.0);
 
     // Get current order book snapshot
-    Json get_orderbook_snapshot();
+    Task<Json> get_orderbook_snapshot();
 };
