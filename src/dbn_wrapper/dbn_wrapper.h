@@ -62,9 +62,11 @@ public:
             m_stop_future_value.set_value(true);
         }
 
-        // spdlog::info("feed_snapshots: {}", feed_snapshots);
-        spdlog::info("size of feed_snapshots: {}", feed_snapshots["snapshots"].size());
         spdlog::warn("Finished streaming DBN file");
+
+        // spdlog::info("size of feed_snapshots: {}", feed_snapshots["snapshots"].size());
+        // spdlog::info("size of feed_snapshots 0: {}", feed_snapshots["snapshots"][0]);
+        // feed_snapshots.write_to_file("feed_snapshots.json");
 
         co_return;
     }
