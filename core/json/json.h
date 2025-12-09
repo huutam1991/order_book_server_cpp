@@ -278,6 +278,15 @@ public:
         return builder.finish();
     }
 
+    inline void write_to_file(std::string file_name) const
+    {
+        std::ofstream file(file_name);
+        JsonFileWriter writer(file);
+
+        write_string_value(writer);
+        writer.finish();
+    }
+
     inline void write_string_value(JsonStringBuilder& builder) const
     {
         if (m_value)
