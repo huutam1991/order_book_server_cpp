@@ -223,7 +223,6 @@ public:
 
     void handle_trade(const databento::MboMsg& mbo)
     {
-        spdlog::debug("Handling trade for order_id={}", mbo.order_id);
         auto it = m_orders_ref.find(mbo.order_id);
         if (it == m_orders_ref.end()) return;
 
@@ -244,7 +243,6 @@ public:
 
     void handle_full_fill(const databento::MboMsg& mbo)
     {
-        spdlog::debug("Handling full fill for order_id={}", mbo.order_id);
         auto it = m_orders_ref.find(mbo.order_id);
         if (it == m_orders_ref.end()) return;
 

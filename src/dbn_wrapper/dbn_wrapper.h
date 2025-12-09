@@ -13,7 +13,7 @@
 class DbnWrapper
 {
 public:
-    using Callback = std::function<void(const databento::MboMsg&)>;
+    using Callback = std::function<void(const databento::MboMsg&, Json&)>;
 
     DbnWrapper(const std::string& file_path) : m_store(file_path), m_speed(1.0), m_is_streaming(false)
     {}
@@ -29,6 +29,7 @@ public:
 
     Task<void> start_stream_data(Callback cb)
     {
+        Json feed_snapshots;
         m_is_streaming.store(true);
 
         const databento::Record* rec;
@@ -46,7 +47,7 @@ public:
             }
 
             // invoke user callback
-            cb(*mbo);
+            cb(*mbo, feed_snapshots);
         }
 
         m_is_streaming.store(false);
@@ -61,6 +62,8 @@ public:
             m_stop_future_value.set_value(true);
         }
 
+        // spdlog::info("feed_snapshots: {}", feed_snapshots);
+        spdlog::info("size of feed_snapshots: {}", feed_snapshots["snapshots"].size());
         spdlog::warn("Finished streaming DBN file");
 
         co_return;

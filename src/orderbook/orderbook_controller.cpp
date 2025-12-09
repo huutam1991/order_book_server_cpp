@@ -24,11 +24,17 @@ Task<void> OrderBookController::start_streaming(double speed)
     apply_stats.clear();
     count_mbo_msgs = 0;
 
-    auto task = m_dbn_wrapper->start_stream_data([this, m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg)
+    auto task = m_dbn_wrapper->start_stream_data([this, m_order_book = m_order_book.get()](const databento::MboMsg& mbo_msg, Json& feed_snapshots)
     {
         auto start = std::chrono::high_resolution_clock::now();
 
         m_order_book->apply(mbo_msg);
+
+        Json feed_snapshot;
+        feed_snapshot["snapshot"] = m_order_book->build_snapshot();
+        feed_snapshot["sequence"] = mbo_msg.sequence;
+
+        feed_snapshots["snapshots"].push_back(feed_snapshot);
 
         auto end = std::chrono::high_resolution_clock::now();
         double us = std::chrono::duration<double, std::micro>(end - start).count();
