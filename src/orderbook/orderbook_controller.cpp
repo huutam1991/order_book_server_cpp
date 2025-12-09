@@ -30,11 +30,11 @@ Task<void> OrderBookController::start_streaming(double speed)
 
         m_order_book->apply(mbo_msg);
 
-        Json feed_snapshot;
-        feed_snapshot["snapshot"] = m_order_book->build_snapshot();
-        feed_snapshot["sequence"] = mbo_msg.sequence;
+        // Json feed_snapshot;
+        // feed_snapshot["snapshot"] = m_order_book->build_snapshot();
+        // feed_snapshot["sequence"] = mbo_msg.sequence;
 
-        feed_snapshots["snapshots"].push_back(feed_snapshot);
+        // feed_snapshots["snapshots"].push_back(feed_snapshot);
 
         auto end = std::chrono::high_resolution_clock::now();
         double us = std::chrono::duration<double, std::micro>(end - start).count();
