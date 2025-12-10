@@ -31,6 +31,12 @@ public:
         inline bool empty() const { return queue.empty(); }
     };
 
+    struct LevelByPrice
+    {
+        int64_t price;
+        Level* level;
+    };
+
     struct DepthEntry
     {
         int64_t price;
@@ -394,6 +400,112 @@ public:
             auto task = this->get_snapshot_async(future_value);
             task.start_running_on(event_base);
         });
+    }
+
+    // ===========================================
+    // Builld MbpMsg10
+    // ===========================================
+    Json build_mbp_msg10_from_mbo_msg(const databento::MboMsg& mbo_msg) const
+    {
+        Json bid_ask_pairs = build_bid_ask_pairs_by_level(10);
+
+        Json mbp10_msg = {
+            {"hd", {
+                {"rtype", mbo_msg.hd.rtype},
+                {"ts_event", mbo_msg.hd.ts_event.time_since_epoch().count()},
+                {"instrument_id", mbo_msg.hd.instrument_id},
+                {"publisher_id", mbo_msg.hd.publisher_id},
+                {"length", mbo_msg.hd.length}
+            }},
+            {"price", mbo_msg.price},
+            {"size", mbo_msg.size},
+            {"action", mbo_msg.action},
+            {"side", mbo_msg.side},
+            {"flags", mbo_msg.flags.Raw()},
+            {"depth", bid_ask_pairs["num_levels"]},
+            {"ts_recv", mbo_msg.ts_recv.time_since_epoch().count()},
+            {"ts_in_delta", mbo_msg.ts_in_delta.count()},
+            {"sequence", mbo_msg.sequence},
+            {"levels", bid_ask_pairs["bid_ask_pairs"]}
+        };
+
+        return mbp10_msg;
+    }
+
+    Json build_bid_ask_pairs_by_level(size_t levels) const
+    {
+        LevelByPrice bid_levels[20];
+        LevelByPrice ask_levels[20];
+        size_t bid_count = 0;
+        size_t ask_count = 0;
+
+        // ----------- BIDS (high → low) --------------
+        for (int i = (int)m_num_levels - 1; i >= 0; --i)
+        {
+            const Level& lvl = m_bids[i];
+            if (!lvl.empty())
+            {
+                int64_t price = m_price_min + i * m_tick_size;
+                bid_levels[bid_count++] = LevelByPrice{price, (Level*)&lvl};
+
+                if (bid_count >= levels) break;
+            }
+        }
+
+        // ----------- ASKS (low → high) --------------
+        for (size_t i = 0; i < m_num_levels; ++i)
+        {
+            const Level& lvl = m_asks[i];
+            if (!lvl.empty())
+            {
+                int64_t price = m_price_min + i * m_tick_size;
+                ask_levels[ask_count++] = LevelByPrice{price, (Level*)&lvl};
+
+                if (ask_count >= levels) break;
+            }
+        }
+
+        // Build bid-ask pairs
+        Json bid_ask_pairs;
+        for (size_t i = 0; i < levels; ++i)
+        {
+            Json pair;
+
+            // Bid
+            if (i < bid_count)
+            {
+                pair["bid_px"] = bid_levels[i].price;
+                pair["bid_sz"] = bid_levels[i].level->total_size;
+                pair["bid_ct"] = bid_levels[i].level->queue.size();
+            }
+            else
+            {
+                pair["bid_px"] = 0;
+                pair["bid_sz"] = 0;
+                pair["bid_ct"] = 0;
+            }
+
+            // Ask
+            if (i < ask_count)
+            {
+                pair["ask_px"] = ask_levels[i].price;
+                pair["ask_sz"] = ask_levels[i].level->total_size;
+                pair["ask_ct"] = ask_levels[i].level->queue.size();
+            }
+            else
+            {
+                pair["ask_px"] = 0;
+                pair["ask_sz"] = 0;
+                pair["ask_ct"] = 0;
+            }
+
+            bid_ask_pairs.push_back(pair);
+        }
+
+        return {
+            {"bid_ask_pairs", bid_ask_pairs},
+            {"num_levels", std::min(levels, std::max(bid_count, ask_count))}
+        };
     }
 
     // ============================================
