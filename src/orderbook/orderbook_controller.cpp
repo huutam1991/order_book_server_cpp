@@ -53,7 +53,7 @@ Task<void> OrderBookController::stop_streaming()
     co_return;
 }
 
-Task<Json> OrderBookController::get_orderbook_snapshot()
+Task<void> OrderBookController::get_orderbook_snapshot_async(Future<Json>::FutureValue future_value)
 {
     static LatencyTracker latency;
 
@@ -62,9 +62,10 @@ Task<Json> OrderBookController::get_orderbook_snapshot()
 
     if (m_order_book == nullptr)
     {
-        co_return Json();
+        future_value.set_value(Json{});
+        co_return;
     }
-    Json snapshot = co_await m_order_book->get_snapshot();
+    Json snapshot = m_order_book->build_snapshot();
 
     // End latency tracking
     auto t1 = std::chrono::steady_clock::now();
@@ -85,5 +86,16 @@ Task<Json> OrderBookController::get_orderbook_snapshot()
         {"throughput_p99", 1000000.0 / apply_stats.p99()}
     };
 
-    co_return snapshot;
+    future_value.set_value(std::move(snapshot));
+
+    co_return;
+}
+
+Future<Json> OrderBookController::get_orderbook_snapshot()
+{
+    return Future<Json>([this](Future<Json>::FutureValue future_value)
+    {
+        auto task = this->get_orderbook_snapshot_async(future_value);
+        task.start_running_on(event_base);
+    });
 }

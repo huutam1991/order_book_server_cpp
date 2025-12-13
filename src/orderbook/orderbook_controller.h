@@ -8,6 +8,8 @@
 #include <dbn_wrapper/dbn_wrapper.h>
 #include <utils/latency_tracker.h>
 #include <coroutine/event_base_manager.h>
+#include <coroutine/task.h>
+#include <coroutine/future.h>
 
 class OrderBookController
 {
@@ -32,5 +34,6 @@ public:
     Task<void> start_streaming(double speed = 1.0);
 
     // Get current order book snapshot
-    Task<Json> get_orderbook_snapshot();
+    Task<void> get_orderbook_snapshot_async(Future<Json>::FutureValue future_value);
+    Future<Json> get_orderbook_snapshot();
 };
