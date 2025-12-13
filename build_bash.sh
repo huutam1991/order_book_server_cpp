@@ -64,7 +64,7 @@ check_to_install_databento() {
         -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
 
     # Build
-    cmake --build build --target databento --parallel
+    cmake --build build --target databento --parallel 2
 
     # Install (requires sudo)
     cmake --install build
