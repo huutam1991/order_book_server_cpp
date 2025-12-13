@@ -18,13 +18,61 @@ install_if_missing() {
     fi
 
     if check_package "$pkg"; then
-        echo " * [$pkg] is already installed."
+        echo "✔ [$pkg] is already installed."
         return
     fi
 
-    echo " * [$pkg] not found. Installing..."
+    echo "✘ [$pkg] not found. Installing..."
     apt update -y
     apt install -y "$pkg"
+}
+
+check_to_install_databento() {
+    local INSTALL_PREFIX="/usr/local"
+    local CMAKE_CONFIG_PATH=""
+    local REPO_URL="https://github.com/databento/databento-cpp"
+    local BUILD_DIR="databento-cpp"
+
+    # Detect databentoConfig.cmake
+    for path in \
+        "$INSTALL_PREFIX/lib/cmake/databento/databentoConfig.cmake" \
+        "$INSTALL_PREFIX/lib64/cmake/databento/databentoConfig.cmake"
+    do
+        if [ -f "$path" ]; then
+            CMAKE_CONFIG_PATH="$path"
+            break
+        fi
+    done
+
+    if [ -n "$CMAKE_CONFIG_PATH" ]; then
+        echo "✔ databento already installed: $CMAKE_CONFIG_PATH"
+        return 0
+    fi
+
+    echo "databento not found, installing..."
+
+    # Clean old source if exists
+    rm -rf "$BUILD_DIR"
+
+    # Clone
+    git clone "$REPO_URL"
+    cd "$BUILD_DIR"
+
+    # Configure
+    cmake -S . -B build \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
+
+    # Build
+    cmake --build build --target databento --parallel
+
+    # Install (requires sudo)
+    cmake --install build
+
+    cd ..
+    rm -rf "$BUILD_DIR"
+
+    echo "✔ databento installed successfully"
 }
 
 # Check & install packages if missing
@@ -35,6 +83,8 @@ install_if_missing libssl-dev
 install_if_missing libsasl2-dev
 install_if_missing libzstd-dev
 install_if_missing libspdlog-dev
+
+check_to_install_databento
 
 mkdir -p build
 cd build/

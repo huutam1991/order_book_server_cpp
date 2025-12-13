@@ -5,17 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines")
 
-# Install databento
-include(FetchContent)
-FetchContent_Declare(
-  databento
-  GIT_REPOSITORY https://github.com/databento/databento-cpp.git
-  GIT_TAG        main
-)
-FetchContent_MakeAvailable(databento)
-
 find_package(OpenSSL REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(databento REQUIRED)
 
 include_directories("/usr/local/lib")
 include_directories(core)
