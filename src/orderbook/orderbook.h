@@ -407,7 +407,7 @@ public:
     // ===========================================
     Json build_mbp_msg10_from_mbo_msg(const databento::MboMsg& mbo_msg) const
     {
-        Json bid_ask_pairs = build_bid_ask_pairs_by_level(10);
+        Json bid_ask_pairs = build_bid_ask_pairs();
 
         Json mbp10_msg = {
             {"hd", {
@@ -432,10 +432,11 @@ public:
         return mbp10_msg;
     }
 
-    Json build_bid_ask_pairs_by_level(size_t levels) const
+    Json build_bid_ask_pairs() const
     {
-        LevelByPrice bid_levels[20];
-        LevelByPrice ask_levels[20];
+        static int count = 0;
+        LevelByPrice bid_levels[2000];
+        LevelByPrice ask_levels[2000];
         size_t bid_count = 0;
         size_t ask_count = 0;
 
@@ -443,12 +444,10 @@ public:
         for (int i = (int)m_num_levels - 1; i >= 0; --i)
         {
             const Level& lvl = m_bids[i];
-            if (!lvl.empty())
+            if (!lvl.empty() && lvl.total_size > 0)
             {
                 int64_t price = m_price_min + i * m_tick_size;
                 bid_levels[bid_count++] = LevelByPrice{price, (Level*)&lvl};
-
-                if (bid_count >= levels) break;
             }
         }
 
@@ -456,18 +455,18 @@ public:
         for (size_t i = 0; i < m_num_levels; ++i)
         {
             const Level& lvl = m_asks[i];
-            if (!lvl.empty())
+            if (!lvl.empty() && lvl.total_size > 0)
             {
                 int64_t price = m_price_min + i * m_tick_size;
                 ask_levels[ask_count++] = LevelByPrice{price, (Level*)&lvl};
-
-                if (ask_count >= levels) break;
             }
         }
 
+        int max_count = std::max(bid_count, ask_count);
+
         // Build bid-ask pairs
         Json bid_ask_pairs;
-        for (size_t i = 0; i < levels; ++i)
+        for (size_t i = 0; i < max_count; ++i)
         {
             Json pair;
 
@@ -499,12 +498,18 @@ public:
                 pair["ask_ct"] = 0;
             }
 
+            if (i >= max_count)
+            {
+                break;
+            }
+
             bid_ask_pairs.push_back(pair);
+
         }
 
         return {
             {"bid_ask_pairs", bid_ask_pairs},
-            {"num_levels", std::min(levels, std::max(bid_count, ask_count))}
+            {"num_levels", std::max(bid_count, ask_count)}
         };
     }
 
