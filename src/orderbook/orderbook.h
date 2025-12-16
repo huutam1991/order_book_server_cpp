@@ -385,17 +385,17 @@ public:
         return snap;
     }
 
-    Task<void> get_snapshot_async(Future<Json>::FutureValue future_value)
+    Task<void> get_snapshot_async(Future<Json>::FutureValue* future_value)
     {
         Json snap = build_snapshot();
-        future_value.set_value(std::move(snap));
+        future_value->set_value(std::move(snap));
 
         co_return;
     }
 
     Future<Json> get_snapshot()
     {
-        return Future<Json>([this](Future<Json>::FutureValue future_value)
+        return Future<Json>([this](Future<Json>::FutureValue* future_value)
         {
             auto task = this->get_snapshot_async(future_value);
             task.start_running_on(event_base);
@@ -513,17 +513,17 @@ public:
         };
     }
 
-    Task<void> get_mbp_msg10_from_mbo_msg_async(Future<Json>::FutureValue future_value, const databento::MboMsg& mbo_msg)
+    Task<void> get_mbp_msg10_from_mbo_msg_async(Future<Json>::FutureValue* future_value, const databento::MboMsg& mbo_msg)
     {
         Json data = build_mbp_msg10_from_mbo_msg(mbo_msg);
-        future_value.set_value(std::move(data));
+        future_value->set_value(std::move(data));
 
         co_return;
     }
 
     Future<Json> get_mbp_msg10_from_mbo_msg(const databento::MboMsg& mbo_msg)
     {
-        return Future<Json>([this, mbo_msg](Future<Json>::FutureValue future_value)
+        return Future<Json>([this, mbo_msg](Future<Json>::FutureValue* future_value)
         {
             auto task = this->get_mbp_msg10_from_mbo_msg_async(future_value, mbo_msg);
             task.start_running_on(event_base);

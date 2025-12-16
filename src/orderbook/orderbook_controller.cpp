@@ -53,7 +53,7 @@ Task<void> OrderBookController::stop_streaming()
     co_return;
 }
 
-Task<void> OrderBookController::get_orderbook_snapshot_async(Future<Json>::FutureValue future_value)
+Task<void> OrderBookController::get_orderbook_snapshot_async(Future<Json>::FutureValue* future_value)
 {
     static LatencyTracker latency;
 
@@ -62,7 +62,7 @@ Task<void> OrderBookController::get_orderbook_snapshot_async(Future<Json>::Futur
 
     if (m_order_book == nullptr)
     {
-        future_value.set_value(Json{});
+        future_value->set_value(Json{});
         co_return;
     }
     Json snapshot = m_order_book->build_snapshot();
@@ -86,14 +86,14 @@ Task<void> OrderBookController::get_orderbook_snapshot_async(Future<Json>::Futur
         {"throughput_p99", 1000000.0 / apply_stats.p99()}
     };
 
-    future_value.set_value(std::move(snapshot));
+    future_value->set_value(std::move(snapshot));
 
     co_return;
 }
 
 Future<Json> OrderBookController::get_orderbook_snapshot()
 {
-    return Future<Json>([this](Future<Json>::FutureValue future_value)
+    return Future<Json>([this](Future<Json>::FutureValue* future_value)
     {
         auto task = this->get_orderbook_snapshot_async(future_value);
         task.start_running_on(event_base);

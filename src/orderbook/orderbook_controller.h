@@ -34,6 +34,6 @@ public:
     Task<void> start_streaming(double speed = 1.0);
 
     // Get current order book snapshot
-    Task<void> get_orderbook_snapshot_async(Future<Json>::FutureValue future_value);
+    Task<void> get_orderbook_snapshot_async(Future<Json>::FutureValue* future_value);
     Future<Json> get_orderbook_snapshot();
 };
