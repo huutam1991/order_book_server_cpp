@@ -31,6 +31,7 @@ public:
     {
         Json feed_snapshots;
         m_is_streaming.store(true);
+        m_stop_future_value = nullptr;
 
         const databento::Record* rec;
         std::optional<databento::UnixNanos> prev_ts;
@@ -57,7 +58,7 @@ public:
             m_end_callback();
         }
 
-        if (m_stop_future_value->is_value_set() == false)
+        if (m_stop_future_value && m_stop_future_value->is_value_set() == false)
         {
             m_stop_future_value->set_value(true);
         }
@@ -95,5 +96,5 @@ private:
     double m_speed;
     std::atomic<bool> m_is_streaming = false;
     std::function<void()> m_end_callback = nullptr;
-    Future<bool>::FutureValue* m_stop_future_value;
+    Future<bool>::FutureValue* m_stop_future_value = nullptr;
 };
